@@ -1,12 +1,9 @@
-﻿using System;
-using System.Linq;
-using System.Windows;
-using NetVox.Core.Interfaces;
+﻿using NetVox.Core.Interfaces;
 using NetVox.Core.Models;
 using NetVox.Core.Services;
 using NetVox.Persistence.Repositories;
-using NetVox.Core.Interfaces;
-using NetVox.Core.Services;
+using System.Net;
+using System.Windows;
 
 
 namespace NetVox.UI
@@ -15,69 +12,55 @@ namespace NetVox.UI
     {
         private readonly IRadioService _radio;
         private readonly IConfigRepository _repo;
-        private Profile _profile = new();
         private readonly INetworkService _networkService;
-
+        private readonly IPduService _pduService;
+        private Profile _profile = new();
 
         public MainWindow()
         {
             InitializeComponent();
 
-            // Instantiate stub services
+            // Instantiate services
             _radio = new StubRadioService();
             _repo = new JsonConfigRepository();
             _networkService = new NetworkService();
-
+            _pduService = new PduService();
 
             // Populate channel combo (1–15)
             for (int i = 1; i <= 15; i++)
-                ChannelCombo.Items.Add(i);
-            ChannelCombo.SelectedIndex = 0;
+
 
             // Hook up events
             BtnLoad.Click += BtnLoad_Click;
             BtnSave.Click += BtnSave_Click;
-            BtnStart.Click += BtnStart_Click;
-            BtnStop.Click += BtnStop_Click;
-            ChannelCombo.SelectionChanged += ChannelCombo_SelectionChanged;
-            _radio.TransmitStarted += (_, _) => Dispatcher.Invoke(() => TxtStatus.Text = "PTT Started");
-            _radio.TransmitStopped += (_, _) => Dispatcher.Invoke(() => TxtStatus.Text = "PTT Stopped");
-            BtnNetwork.Click += BtnNetwork_Click;
+            
+            
+            BtnNetworkApply.Click += BtnNetworkApply_Click;
+            BtnDisApply.Click += BtnDisApply_Click;
+            
 
+            // On window loaded, populate async lists
+            Loaded += MainWindow_Loaded;
         }
 
-        private void BtnNetwork_Click(object sender, RoutedEventArgs e)
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            var win = new NetworkSettingsWindow(_networkService);
-            win.Owner = this;
-            win.ShowDialog();
+            // Populate local IPs
+            var ips = await _networkService.GetAvailableLocalIPsAsync();
+            ComboLocalIP.ItemsSource = ips;
+            ComboLocalIP.SelectedItem = _networkService.CurrentConfig.LocalIPAddress;
 
-            // Update status with the chosen settings
-            var cfg = _networkService.CurrentConfig;
-            TxtStatus.Text = $"Network: {cfg.LocalIPAddress} → {cfg.DestinationIPAddress} ({cfg.Mode})";
+            // Populate DIS versions
+            ComboVersion.ItemsSource = Enum.GetValues(typeof(DisVersion));
+            ComboVersion.SelectedItem = _pduService.Settings.Version;
         }
 
-
-        private void ChannelCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void BtnLoad_Click(object sender, RoutedEventArgs e)
         {
-            int channel = (int)ChannelCombo.SelectedItem;
-            try
-            {
-                _radio.SetChannel(channel);
-                TxtStatus.Text = $"Channel set to {channel}";
-            }
-            catch (Exception ex)
-            {
-                TxtStatus.Text = $"Error: {ex.Message}";
-            }
-        }
-
-        private void BtnLoad_Click(object? sender, RoutedEventArgs e)
-        {
-            // Hard-code a path for now; we’ll add dialogs later
             string path = System.IO.Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 "NetVox", "default.json");
+
             try
             {
                 _profile = _repo.LoadProfile(path);
@@ -89,12 +72,13 @@ namespace NetVox.UI
             }
         }
 
-        private void BtnSave_Click(object? sender, RoutedEventArgs e)
+        private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
             string dir = System.IO.Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 "NetVox");
             string path = System.IO.Path.Combine(dir, "default.json");
+
             try
             {
                 _repo.SaveProfile(_profile, path);
@@ -106,16 +90,42 @@ namespace NetVox.UI
             }
         }
 
-        private async void BtnStart_Click(object? sender, RoutedEventArgs e)
+        private async void BtnStart_Click(object sender, RoutedEventArgs e)
         {
             TxtStatus.Text = "Starting PTT…";
             await _radio.StartTransmitAsync();
         }
 
-        private async void BtnStop_Click(object? sender, RoutedEventArgs e)
+      
+        private void BtnNetworkApply_Click(object sender, RoutedEventArgs e)
         {
-            TxtStatus.Text = "Stopping PTT…";
-            await _radio.StopTransmitAsync();
+            _networkService.CurrentConfig.DestinationIPAddress = TxtDestinationIP.Text;
+
+            // Auto‐detect mode: multicast if 224.0.0.0–239.255.255.255
+            if (IPAddress.TryParse(TxtDestinationIP.Text, out var dest))
+            {
+                var first = dest.GetAddressBytes()[0];
+                _networkService.CurrentConfig.Mode =
+                    (first >= 224 && first <= 239)
+                        ? NetworkMode.Multicast
+                        : NetworkMode.Unicast;
+            }
+            else
+            {
+                _networkService.CurrentConfig.Mode = NetworkMode.Unicast;
+            }
+
+            var cfg = _networkService.CurrentConfig;
+            TxtStatus.Text =
+                $"Network applied: {cfg.LocalIPAddress} → {cfg.DestinationIPAddress} ({cfg.Mode})";
+        }
+
+        private void BtnDisApply_Click(object sender, RoutedEventArgs e)
+        {
+            if (ComboVersion.SelectedItem is DisVersion version)
+                _pduService.Settings.Version = version;
+
+            TxtStatus.Text = $"DIS version set to {_pduService.Settings.Version}";
         }
     }
 }
