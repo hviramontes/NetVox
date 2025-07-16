@@ -5,6 +5,9 @@ using NetVox.Core.Interfaces;
 using NetVox.Core.Models;
 using NetVox.Core.Services;
 using NetVox.Persistence.Repositories;
+using NetVox.Core.Interfaces;
+using NetVox.Core.Services;
+
 
 namespace NetVox.UI
 {
@@ -13,6 +16,8 @@ namespace NetVox.UI
         private readonly IRadioService _radio;
         private readonly IConfigRepository _repo;
         private Profile _profile = new();
+        private readonly INetworkService _networkService;
+
 
         public MainWindow()
         {
@@ -21,6 +26,8 @@ namespace NetVox.UI
             // Instantiate stub services
             _radio = new StubRadioService();
             _repo = new JsonConfigRepository();
+            _networkService = new NetworkService();
+
 
             // Populate channel combo (1–15)
             for (int i = 1; i <= 15; i++)
@@ -35,7 +42,21 @@ namespace NetVox.UI
             ChannelCombo.SelectionChanged += ChannelCombo_SelectionChanged;
             _radio.TransmitStarted += (_, _) => Dispatcher.Invoke(() => TxtStatus.Text = "PTT Started");
             _radio.TransmitStopped += (_, _) => Dispatcher.Invoke(() => TxtStatus.Text = "PTT Stopped");
+            BtnNetwork.Click += BtnNetwork_Click;
+
         }
+
+        private void BtnNetwork_Click(object sender, RoutedEventArgs e)
+        {
+            var win = new NetworkSettingsWindow(_networkService);
+            win.Owner = this;
+            win.ShowDialog();
+
+            // Update status with the chosen settings
+            var cfg = _networkService.CurrentConfig;
+            TxtStatus.Text = $"Network: {cfg.LocalIPAddress} → {cfg.DestinationIPAddress} ({cfg.Mode})";
+        }
+
 
         private void ChannelCombo_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
