@@ -8,13 +8,20 @@ using NetVox.Core.Models;
 namespace NetVox.Core.Services
 {
     /// <summary>
-    /// Formats and sends DIS Signal (Type 25) and Data (Type 26) PDUs over UDP.
+    /// Formats and sends DIS Signal (Type 25) and Data (Type 26) PDUs over UDP,
+    /// with support for 16-bit PCM, 8-bit PCM, and μ-law codecs.
     /// </summary>
     public class PduService : IPduService
     {
         private readonly INetworkService _networkService;
 
         public PduSettings Settings { get; set; } = new PduSettings();
+
+        // μ-law segment end points for encoding
+        private static readonly int[] MuLawSegmentEnd = {
+            0xFF, 0x1FF, 0x3FF, 0x7FF,
+            0xFFF, 0x1FFF, 0x3FFF, 0x7FFF
+        };
 
         public PduService(INetworkService networkService)
         {
@@ -23,16 +30,34 @@ namespace NetVox.Core.Services
 
         public async Task SendSignalPduAsync(byte[] audioData)
         {
+            // Pick the destination settings
             var cfg = _networkService.CurrentConfig;
-            // Always send both Type 25 (Signal) and Type 26 (Data)
-            var pdu25 = PduBuilder.BuildSignalPdu(audioData, Settings.Version);
-            var pdu26 = PduBuilder.BuildDataPdu(audioData, Settings.Version);
+
+            // Convert payload according to selected codec
+            byte[] payload = audioData;
+            switch (Settings.Codec)
+            {
+                case CodecType.Pcm8:
+                    payload = ConvertPcm16ToPcm8(audioData);
+                    break;
+                case CodecType.MuLaw:
+                    payload = ConvertPcm16ToMuLaw(audioData);
+                    break;
+                // Pcm16: no conversion
+                case CodecType.Pcm16:
+                default:
+                    break;
+            }
+
+            // Build the PDUs
+            var pdu25 = PduBuilder.BuildSignalPdu(payload, Settings.Version);
+            var pdu26 = PduBuilder.BuildDataPdu(payload, Settings.Version);
 
             using var client = new UdpClient();
-            // Bind to local IP
+            // Bind to the chosen local IP
             client.Client.Bind(new IPEndPoint(IPAddress.Parse(cfg.LocalIPAddress), 0));
 
-            // Configure for broadcast or multicast
+            // Configure broadcasting or multicasting
             if (cfg.Mode == NetworkMode.Broadcast)
                 client.EnableBroadcast = true;
             else if (cfg.Mode == NetworkMode.Multicast)
@@ -42,5 +67,61 @@ namespace NetVox.Core.Services
             await client.SendAsync(pdu25, pdu25.Length, cfg.DestinationIPAddress, 3000);
             await client.SendAsync(pdu26, pdu26.Length, cfg.DestinationIPAddress, 3000);
         }
+
+        #region Codec conversion helpers
+
+        private static byte[] ConvertPcm16ToPcm8(byte[] pcm16Data)
+        {
+            int sampleCount = pcm16Data.Length / 2;
+            var pcm8 = new byte[sampleCount];
+            for (int i = 0; i < sampleCount; i++)
+            {
+                short sample16 = (short)(pcm16Data[2 * i] |
+                                         (pcm16Data[2 * i + 1] << 8));
+                int unsigned8 = (sample16 >> 8) + 128;
+                pcm8[i] = (byte)unsigned8;
+            }
+            return pcm8;
+        }
+
+        private static byte[] ConvertPcm16ToMuLaw(byte[] pcm16Data)
+        {
+            int sampleCount = pcm16Data.Length / 2;
+            var muLaw = new byte[sampleCount];
+            for (int i = 0; i < sampleCount; i++)
+            {
+                short sample16 = (short)(pcm16Data[2 * i] |
+                                         (pcm16Data[2 * i + 1] << 8));
+                muLaw[i] = MuLawEncode(sample16);
+            }
+            return muLaw;
+        }
+
+        private static byte MuLawEncode(short sample)
+        {
+            const int BIAS = 0x84; // 132
+
+            int sign = (sample >> 8) & 0x80;
+            if (sign != 0) sample = (short)-sample;
+            if (sample > 0x7FFF) sample = 0x7FFF;
+            sample += BIAS;
+
+            int segment = FindMuLawSegment(sample);
+            int mantissa = (sample >> (segment + 3)) & 0x0F;
+            int muLawByte = ~(sign | (segment << 4) | mantissa);
+            return (byte)muLawByte;
+        }
+
+        private static int FindMuLawSegment(int sample)
+        {
+            for (int i = 0; i < MuLawSegmentEnd.Length; i++)
+            {
+                if (sample <= MuLawSegmentEnd[i])
+                    return i;
+            }
+            return MuLawSegmentEnd.Length - 1;
+        }
+
+        #endregion
     }
 }
