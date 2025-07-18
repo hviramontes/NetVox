@@ -15,6 +15,8 @@ namespace NetVox.Core.Services
     {
         private readonly INetworkService _networkService;
 
+        public event Action<string> LogEvent;
+
         public PduSettings Settings { get; set; } = new PduSettings();
 
         // μ-law segment end points for encoding
@@ -30,42 +32,51 @@ namespace NetVox.Core.Services
 
         public async Task SendSignalPduAsync(byte[] audioData)
         {
-            // Pick the destination settings
             var cfg = _networkService.CurrentConfig;
 
-            // Convert payload according to selected codec
-            byte[] payload = audioData;
-            switch (Settings.Codec)
+            // Log start of send
+            LogEvent?.Invoke($"Sending PDUs from {cfg.LocalIPAddress} to {cfg.DestinationIPAddress} ({cfg.Mode})");
+
+            try
             {
-                case CodecType.Pcm8:
-                    payload = ConvertPcm16ToPcm8(audioData);
-                    break;
-                case CodecType.MuLaw:
-                    payload = ConvertPcm16ToMuLaw(audioData);
-                    break;
-                // Pcm16: no conversion
-                case CodecType.Pcm16:
-                default:
-                    break;
+                // Convert payload according to selected codec
+                byte[] payload = audioData;
+                switch (Settings.Codec)
+                {
+                    case CodecType.Pcm8:
+                        payload = ConvertPcm16ToPcm8(audioData);
+                        break;
+                    case CodecType.MuLaw:
+                        payload = ConvertPcm16ToMuLaw(audioData);
+                        break;
+                    case CodecType.Pcm16:
+                    default:
+                        break;
+                }
+
+                // Build the PDUs
+                var pdu25 = PduBuilder.BuildSignalPdu(payload, Settings.Version);
+                var pdu26 = PduBuilder.BuildDataPdu(payload, Settings.Version);
+
+                using var client = new UdpClient();
+                client.Client.Bind(new IPEndPoint(IPAddress.Parse(cfg.LocalIPAddress), 0));
+
+                if (cfg.Mode == NetworkMode.Broadcast)
+                    client.EnableBroadcast = true;
+                else if (cfg.Mode == NetworkMode.Multicast)
+                    client.JoinMulticastGroup(IPAddress.Parse(cfg.DestinationIPAddress));
+
+                // Send both PDUs
+                await client.SendAsync(pdu25, pdu25.Length, cfg.DestinationIPAddress, 3000);
+                LogEvent?.Invoke($"Sent Signal PDU (Type 25), {pdu25.Length} bytes");
+
+                await client.SendAsync(pdu26, pdu26.Length, cfg.DestinationIPAddress, 3000);
+                LogEvent?.Invoke($"Sent Data   PDU (Type 26), {pdu26.Length} bytes");
             }
-
-            // Build the PDUs
-            var pdu25 = PduBuilder.BuildSignalPdu(payload, Settings.Version);
-            var pdu26 = PduBuilder.BuildDataPdu(payload, Settings.Version);
-
-            using var client = new UdpClient();
-            // Bind to the chosen local IP
-            client.Client.Bind(new IPEndPoint(IPAddress.Parse(cfg.LocalIPAddress), 0));
-
-            // Configure broadcasting or multicasting
-            if (cfg.Mode == NetworkMode.Broadcast)
-                client.EnableBroadcast = true;
-            else if (cfg.Mode == NetworkMode.Multicast)
-                client.JoinMulticastGroup(IPAddress.Parse(cfg.DestinationIPAddress));
-
-            // Send both PDUs on port 3000
-            await client.SendAsync(pdu25, pdu25.Length, cfg.DestinationIPAddress, 3000);
-            await client.SendAsync(pdu26, pdu26.Length, cfg.DestinationIPAddress, 3000);
+            catch (Exception ex)
+            {
+                LogEvent?.Invoke($"Error sending PDUs: {ex.Message}");
+            }
         }
 
         #region Codec conversion helpers

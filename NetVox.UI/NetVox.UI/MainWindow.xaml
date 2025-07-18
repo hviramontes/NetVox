@@ -116,6 +116,14 @@
                 </Grid>
             </TabItem>
 
+            <!-- Diagnostics Tab -->
+            <TabItem Header="Diagnostics">
+                <Grid Margin="10">
+                    <ListBox x:Name="LstLogs"/>
+                </Grid>
+            </TabItem>
+
+
         </TabControl>
 
         <!-- Status Line -->

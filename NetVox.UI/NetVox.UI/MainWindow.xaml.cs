@@ -21,14 +21,13 @@ namespace NetVox.UI
             InitializeComponent();
 
             // Instantiate services
-            _radio = new StubRadioService();
+            var audioCapture = new AudioCaptureService();
+            _radio = new RadioService(audioCapture, _pduService);
+
             _repo = new JsonConfigRepository();
             _networkService = new NetworkService();
             _pduService = new PduService(_networkService);
 
-
-            // Populate channel combo (1–15)
-            for (int i = 1; i <= 15; i++)
 
 
             // Hook up events
@@ -38,7 +37,17 @@ namespace NetVox.UI
             
             BtnNetworkApply.Click += BtnNetworkApply_Click;
             BtnDisApply.Click += BtnDisApply_Click;
-            
+
+            // Pipe PDU logs into Diagnostics ListBox
+            _pduService.LogEvent += msg => Dispatcher.Invoke(() =>
+                LstLogs.Items.Add($"{DateTime.Now:HH:mm:ss} {msg}"));
+
+            // Log when PTT starts/stops
+            _radio.TransmitStarted += (_, _) => Dispatcher.Invoke(() =>
+                LstLogs.Items.Add($"{DateTime.Now:HH:mm:ss} Transmit Started"));
+            _radio.TransmitStopped += (_, _) => Dispatcher.Invoke(() =>
+                LstLogs.Items.Add($"{DateTime.Now:HH:mm:ss} Transmit Stopped"));
+
 
             // On window loaded, populate async lists
             Loaded += MainWindow_Loaded;
