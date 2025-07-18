@@ -24,7 +24,8 @@ namespace NetVox.UI
             _radio = new StubRadioService();
             _repo = new JsonConfigRepository();
             _networkService = new NetworkService();
-            _pduService = new PduService();
+            _pduService = new PduService(_networkService);
+
 
             // Populate channel combo (1–15)
             for (int i = 1; i <= 15; i++)
@@ -49,6 +50,9 @@ namespace NetVox.UI
             var ips = await _networkService.GetAvailableLocalIPsAsync();
             ComboLocalIP.ItemsSource = ips;
             ComboLocalIP.SelectedItem = _networkService.CurrentConfig.LocalIPAddress;
+            // Populate Codec choices
+            ComboCodec.ItemsSource = Enum.GetValues(typeof(CodecType));
+            ComboCodec.SelectedItem = _pduService.Settings.Codec;
 
             // Populate DIS versions
             ComboVersion.ItemsSource = Enum.GetValues(typeof(DisVersion));
@@ -124,8 +128,11 @@ namespace NetVox.UI
         {
             if (ComboVersion.SelectedItem is DisVersion version)
                 _pduService.Settings.Version = version;
+            // Read codec selection
+            if (ComboCodec.SelectedItem is CodecType codec)
+                _pduService.Settings.Codec = codec;
 
-            TxtStatus.Text = $"DIS version set to {_pduService.Settings.Version}";
+            TxtStatus.Text = $"DIS: v{_pduService.Settings.Version}, codec={_pduService.Settings.Codec}";
         }
     }
 }
