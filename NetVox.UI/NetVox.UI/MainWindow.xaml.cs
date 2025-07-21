@@ -52,16 +52,13 @@ namespace NetVox.UI
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // Populate local IPs
             var ips = await _networkService.GetAvailableLocalIPsAsync();
             ComboLocalIP.ItemsSource = ips;
             ComboLocalIP.SelectedItem = _networkService.CurrentConfig.LocalIPAddress;
 
-            // Populate Codec choices
             ComboCodec.ItemsSource = Enum.GetValues(typeof(CodecType));
             ComboCodec.SelectedItem = _pduService.Settings.Codec;
 
-            // Populate DIS versions
             ComboVersion.ItemsSource = Enum.GetValues(typeof(DisVersion));
             ComboVersion.SelectedItem = _pduService.Settings.Version;
         }
@@ -76,6 +73,7 @@ namespace NetVox.UI
             {
                 _profile = _repo.LoadProfile(path);
                 TxtStatus.Text = $"Loaded profile with {_profile.Channels?.Count ?? 0} channels";
+                RefreshChannelList();
             }
             catch (Exception ex)
             {
@@ -116,6 +114,7 @@ namespace NetVox.UI
                     var imported = CnrSimImporter.LoadFromCnrSimXml(dlg.FileName);
                     _profile = imported;
                     TxtStatus.Text = $"Imported {imported.Channels.Count} channels from CNR-Sim";
+                    RefreshChannelList();
                 }
                 catch (Exception ex)
                 {
@@ -134,7 +133,6 @@ namespace NetVox.UI
         {
             _networkService.CurrentConfig.DestinationIPAddress = TxtDestinationIP.Text;
 
-            // Auto‐detect mode: multicast if 224.0.0.0–239.255.255.255
             if (IPAddress.TryParse(TxtDestinationIP.Text, out var dest))
             {
                 var first = dest.GetAddressBytes()[0];
@@ -162,6 +160,23 @@ namespace NetVox.UI
                 _pduService.Settings.Codec = codec;
 
             TxtStatus.Text = $"DIS: v{_pduService.Settings.Version}, codec={_pduService.Settings.Codec}";
+        }
+
+        private void RefreshChannelList()
+        {
+            LstChannels.Items.Clear();
+
+            if (_profile?.Channels == null || _profile.Channels.Count == 0)
+            {
+                LstChannels.Items.Add("(no channels loaded)");
+                return;
+            }
+
+            foreach (var chan in _profile.Channels)
+            {
+                var freqMhz = chan.FrequencyHz / 1_000_000.0;
+                LstChannels.Items.Add($"[{chan.ChannelNumber}] {chan.Name} — {freqMhz:0.000} MHz");
+            }
         }
     }
 }

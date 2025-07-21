@@ -10,28 +10,36 @@
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
+                        <!-- Load/Save/Import -->
                         <RowDefinition Height="Auto"/>
+                        <!-- Spacer -->
+                        <RowDefinition Height="*"/>
+                        <!-- ListBox -->
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Load/Save Buttons -->
                     <!-- Load/Save/Import Buttons -->
                     <Button x:Name="BtnLoad"
-  Grid.Row="0" Grid.Column="0"
-  Content="Load Profile"
-  Margin="0,0,10,0"/>
+                            Grid.Row="0" Grid.Column="0"
+                            Content="Load Profile"
+                            Margin="0,0,10,0"/>
                     <Button x:Name="BtnSave"
-  Grid.Row="0" Grid.Column="1"
-  Content="Save Profile"
-  Margin="0,0,10,0"/>
+                            Grid.Row="0" Grid.Column="1"
+                            Content="Save Profile"
+                            Margin="0,0,10,0"/>
                     <Button x:Name="BtnImportCnrSim"
-  Grid.Row="1" Grid.Column="0"
-  Content="Import CNR-Sim"
-  Margin="0,10,10,0"/>
+                            Grid.Row="1" Grid.Column="0"
+                            Content="Import CNR-Sim"
+                            Margin="0,10,10,0"/>
 
+                    <!-- Channel List Display -->
+                    <ListBox x:Name="LstChannels"
+                             Grid.Row="2" Grid.ColumnSpan="2"
+                             Margin="0,10,0,0"
+                             Height="150"/>
                 </Grid>
             </TabItem>
 
@@ -49,31 +57,19 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Local IP Selector -->
-                    <TextBlock Grid.Row="0" Grid.Column="0"
-                     VerticalAlignment="Center"
-                     Text="Local IP:"/>
-                    <ComboBox x:Name="ComboLocalIP"
-                    Grid.Row="0" Grid.Column="1"
-                    Margin="5"/>
+                    <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Local IP:"/>
+                    <ComboBox x:Name="ComboLocalIP" Grid.Row="0" Grid.Column="1" Margin="5"/>
 
-                    <!-- Destination IP Entry -->
-                    <TextBlock Grid.Row="1" Grid.Column="0"
-                     VerticalAlignment="Center"
-                     Text="Destination IP:"/>
-                    <TextBox x:Name="TxtDestinationIP"
-                   Grid.Row="1" Grid.Column="1"
-                   Margin="5"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Destination IP:"/>
+                    <TextBox x:Name="TxtDestinationIP" Grid.Row="1" Grid.Column="1" Margin="5"/>
 
-                    <!-- Spacer -->
                     <Grid Grid.Row="2" Grid.ColumnSpan="2"/>
 
-                    <!-- Apply Button -->
                     <Button x:Name="BtnNetworkApply"
-                  Grid.Row="3" Grid.Column="1"
-                  Content="Apply"
-                  HorizontalAlignment="Right"
-                  Margin="0,10,0,0"/>
+                            Grid.Row="3" Grid.Column="1"
+                            Content="Apply"
+                            HorizontalAlignment="Right"
+                            Margin="0,10,0,0"/>
                 </Grid>
             </TabItem>
 
@@ -82,44 +78,28 @@
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <!-- DIS Version -->
                         <RowDefinition Height="Auto"/>
-                        <!-- Codec -->
                         <RowDefinition Height="*"/>
-                        <!-- Spacer -->
                         <RowDefinition Height="Auto"/>
-                        <!-- Apply button -->
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- DIS Version Selector -->
-                    <TextBlock Grid.Row="0" Grid.Column="0"
-                     VerticalAlignment="Center"
-                     Text="DIS Version:"/>
-                    <ComboBox x:Name="ComboVersion"
-                    Grid.Row="0" Grid.Column="1"
-                    Margin="5"/>
+                    <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="DIS Version:"/>
+                    <ComboBox x:Name="ComboVersion" Grid.Row="0" Grid.Column="1" Margin="5"/>
 
-                    <!-- Codec Selector -->
-                    <TextBlock Grid.Row="1" Grid.Column="0"
-                     VerticalAlignment="Center"
-                     Text="Codec:"/>
-                    <ComboBox x:Name="ComboCodec"
-                    Grid.Row="1" Grid.Column="1"
-                    Margin="5"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Codec:"/>
+                    <ComboBox x:Name="ComboCodec" Grid.Row="1" Grid.Column="1" Margin="5"/>
 
-                    <!-- Spacer -->
                     <Grid Grid.Row="2" Grid.ColumnSpan="2"/>
 
-                    <!-- Apply Button -->
                     <Button x:Name="BtnDisApply"
-                  Grid.Row="3" Grid.Column="1"
-                  Content="Apply"
-                  HorizontalAlignment="Right"
-                  Margin="0,10,0,0"/>
+                            Grid.Row="3" Grid.Column="1"
+                            Content="Apply"
+                            HorizontalAlignment="Right"
+                            Margin="0,10,0,0"/>
                 </Grid>
             </TabItem>
 
@@ -130,13 +110,12 @@
                 </Grid>
             </TabItem>
 
-
         </TabControl>
 
         <!-- Status Line -->
         <TextBlock x:Name="TxtStatus"
-               DockPanel.Dock="Bottom"
-               Margin="10"
-               Text="Ready"/>
+                   DockPanel.Dock="Bottom"
+                   Margin="10"
+                   Text="Ready"/>
     </DockPanel>
 </Window>
