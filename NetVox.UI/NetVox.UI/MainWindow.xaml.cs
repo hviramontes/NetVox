@@ -115,6 +115,23 @@ namespace NetVox.UI
                     _profile = imported;
                     TxtStatus.Text = $"Imported {imported.Channels.Count} channels from CNR-Sim";
                     RefreshChannelList();
+
+                    // Save to default.json
+                    string dir = System.IO.Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                        "NetVox");
+                    string path = System.IO.Path.Combine(dir, "default.json");
+
+                    try
+                    {
+                        _repo.SaveProfile(_profile, path);
+                        TxtStatus.Text += $" and saved to {path}";
+                    }
+                    catch (Exception ex)
+                    {
+                        TxtStatus.Text += $". Save error: {ex.Message}";
+                    }
+
                 }
                 catch (Exception ex)
                 {
