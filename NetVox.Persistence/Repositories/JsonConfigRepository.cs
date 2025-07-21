@@ -18,26 +18,35 @@ namespace NetVox.Persistence.Repositories
             return Directory.GetFiles(directory, $"*{Extension}");
         }
 
-        public Profile LoadProfile(string filePath)
+        public Profile LoadProfile(string fileName)
         {
-            if (!File.Exists(filePath))
-                throw new FileNotFoundException($"Profile not found: {filePath}");
+            var folder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "NetVox");
 
-            var json = File.ReadAllText(filePath);
-            return JsonSerializer.Deserialize<Profile>(json)
-                   ?? throw new InvalidOperationException("Failed to deserialize profile.");
+            var fullPath = Path.Combine(folder, fileName);
+
+            if (!File.Exists(fullPath))
+                return new Profile { Channels = new List<ChannelConfig>() };
+
+            var json = File.ReadAllText(fullPath);
+            return JsonSerializer.Deserialize<Profile>(json) ?? new Profile();
         }
 
-        public void SaveProfile(Profile profile, string filePath)
-        {
-            // Ensure the target folder exists
-            var dir = Path.GetDirectoryName(filePath)
-                      ?? throw new InvalidOperationException("Invalid file path.");
-            Directory.CreateDirectory(dir);
 
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            var json = JsonSerializer.Serialize(profile, options);
-            File.WriteAllText(filePath, json);
+        public void SaveProfile(Profile profile, string fileName)
+        {
+            var folder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "NetVox");
+
+            Directory.CreateDirectory(folder); // ensure folder exists
+
+            var fullPath = Path.Combine(folder, fileName);
+
+            var json = JsonSerializer.Serialize(profile, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(fullPath, json);
         }
+
     }
 }

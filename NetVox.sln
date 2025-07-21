@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetVox.Core", "NetVox.Core\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetVox.Persistence", "NetVox.Persistence\NetVox.Persistence.csproj", "{A0F86468-BEB4-45E7-87DF-6E2D1C9D2568}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetVox.Api", "NetVox.Api\NetVox.Api.csproj", "{9419B8D0-CC02-4AAC-929B-146E658AB2B8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{A0F86468-BEB4-45E7-87DF-6E2D1C9D2568}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0F86468-BEB4-45E7-87DF-6E2D1C9D2568}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0F86468-BEB4-45E7-87DF-6E2D1C9D2568}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9419B8D0-CC02-4AAC-929B-146E658AB2B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9419B8D0-CC02-4AAC-929B-146E658AB2B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9419B8D0-CC02-4AAC-929B-146E658AB2B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9419B8D0-CC02-4AAC-929B-146E658AB2B8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
