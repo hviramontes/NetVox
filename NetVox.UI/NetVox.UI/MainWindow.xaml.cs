@@ -1,10 +1,11 @@
 ﻿using NetVox.Core.Interfaces;
 using NetVox.Core.Models;
 using NetVox.Core.Services;
+using NetVox.Core.Utils;
 using NetVox.Persistence.Repositories;
+using System;
 using System.Net;
 using System.Windows;
-
 
 namespace NetVox.UI
 {
@@ -20,36 +21,32 @@ namespace NetVox.UI
         {
             InitializeComponent();
 
-            // Instantiate services
-            var audioCapture = new AudioCaptureService();
-            _radio = new RadioService(audioCapture, _pduService);
-
+            // Instantiate in the correct order
             _repo = new JsonConfigRepository();
             _networkService = new NetworkService();
             _pduService = new PduService(_networkService);
 
+            var audioCapture = new AudioCaptureService();
+            _radio = new RadioService(audioCapture, _pduService);
 
-
-            // Hook up events
+            // Hook up UI button events
             BtnLoad.Click += BtnLoad_Click;
             BtnSave.Click += BtnSave_Click;
-            
-            
+            BtnImportCnrSim.Click += BtnImportCnrSim_Click;
             BtnNetworkApply.Click += BtnNetworkApply_Click;
             BtnDisApply.Click += BtnDisApply_Click;
 
-            // Pipe PDU logs into Diagnostics ListBox
+            // Pipe logs into diagnostics
             _pduService.LogEvent += msg => Dispatcher.Invoke(() =>
                 LstLogs.Items.Add($"{DateTime.Now:HH:mm:ss} {msg}"));
 
-            // Log when PTT starts/stops
             _radio.TransmitStarted += (_, _) => Dispatcher.Invoke(() =>
                 LstLogs.Items.Add($"{DateTime.Now:HH:mm:ss} Transmit Started"));
+
             _radio.TransmitStopped += (_, _) => Dispatcher.Invoke(() =>
                 LstLogs.Items.Add($"{DateTime.Now:HH:mm:ss} Transmit Stopped"));
 
-
-            // On window loaded, populate async lists
+            // Initialize UI fields
             Loaded += MainWindow_Loaded;
         }
 
@@ -59,6 +56,7 @@ namespace NetVox.UI
             var ips = await _networkService.GetAvailableLocalIPsAsync();
             ComboLocalIP.ItemsSource = ips;
             ComboLocalIP.SelectedItem = _networkService.CurrentConfig.LocalIPAddress;
+
             // Populate Codec choices
             ComboCodec.ItemsSource = Enum.GetValues(typeof(CodecType));
             ComboCodec.SelectedItem = _pduService.Settings.Codec;
@@ -103,13 +101,35 @@ namespace NetVox.UI
             }
         }
 
+        private void BtnImportCnrSim_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Select CNR-Sim config.xml",
+                Filter = "XML Files (*.xml)|*.xml"
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                try
+                {
+                    var imported = CnrSimImporter.LoadFromCnrSimXml(dlg.FileName);
+                    _profile = imported;
+                    TxtStatus.Text = $"Imported {imported.Channels.Count} channels from CNR-Sim";
+                }
+                catch (Exception ex)
+                {
+                    TxtStatus.Text = $"Import failed: {ex.Message}";
+                }
+            }
+        }
+
         private async void BtnStart_Click(object sender, RoutedEventArgs e)
         {
             TxtStatus.Text = "Starting PTT…";
             await _radio.StartTransmitAsync();
         }
 
-      
         private void BtnNetworkApply_Click(object sender, RoutedEventArgs e)
         {
             _networkService.CurrentConfig.DestinationIPAddress = TxtDestinationIP.Text;
@@ -137,7 +157,7 @@ namespace NetVox.UI
         {
             if (ComboVersion.SelectedItem is DisVersion version)
                 _pduService.Settings.Version = version;
-            // Read codec selection
+
             if (ComboCodec.SelectedItem is CodecType codec)
                 _pduService.Settings.Codec = codec;
 

@@ -2,11 +2,18 @@
 {
     /// <summary>
     /// Configuration for a single radio channel (1–15).
-    /// We’ll flesh out properties later (e.g. frequency, codec).
     /// </summary>
     public class ChannelConfig
     {
         public int ChannelNumber { get; set; }
-        // TODO: Add FrequencyHz, CodecType, PttHotkey, etc.
+
+        /// <summary>Center frequency in Hz (e.g., 30000000 for 30 MHz).</summary>
+        public long FrequencyHz { get; set; }
+
+        /// <summary>Bandwidth in Hz (e.g., 25000 for 25 kHz).</summary>
+        public int BandwidthHz { get; set; }
+
+        /// <summary>Display name or label (e.g., "Alpha").</summary>
+        public string Name { get; set; } = string.Empty;
     }
 }

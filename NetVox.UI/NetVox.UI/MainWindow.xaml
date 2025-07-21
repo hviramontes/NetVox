@@ -18,13 +18,20 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Load/Save Buttons -->
+                    <!-- Load/Save/Import Buttons -->
                     <Button x:Name="BtnLoad"
-                  Grid.Row="0" Grid.Column="0"
-                  Content="Load Profile"
-                  Margin="0,0,10,0"/>
+  Grid.Row="0" Grid.Column="0"
+  Content="Load Profile"
+  Margin="0,0,10,0"/>
                     <Button x:Name="BtnSave"
-                  Grid.Row="0" Grid.Column="1"
-                  Content="Save Profile"/>
+  Grid.Row="0" Grid.Column="1"
+  Content="Save Profile"
+  Margin="0,0,10,0"/>
+                    <Button x:Name="BtnImportCnrSim"
+  Grid.Row="1" Grid.Column="0"
+  Content="Import CNR-Sim"
+  Margin="0,10,10,0"/>
+
                 </Grid>
             </TabItem>
 
