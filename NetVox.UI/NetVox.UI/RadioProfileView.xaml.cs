@@ -12,11 +12,23 @@ namespace NetVox.UI.Views
         private readonly string ProfileFolder = System.IO.Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "NetVox", "Profiles");
 
+        private readonly string ProfileListPath = System.IO.Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "NetVox", "Profiles", "profiles.json");
+
         public class RadioProfile
         {
             public string Brand { get; set; }
             public string Model { get; set; }
             public string Display => $"{Brand} {Model}";
+        }
+
+        // Handle dropdown change
+        private void ComboProfile_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ComboProfile.SelectedItem is RadioProfile selected)
+            {
+                TxtProfileName.Text = selected.Model;
+            }
         }
 
         public RadioProfileView()
@@ -49,6 +61,7 @@ namespace NetVox.UI.Views
                         {
                             ComboProfile.Items.Add(profile);
                             ComboProfile.SelectedItem = profile;
+                            SaveProfiles();
                         }
                     }
                     catch (Exception ex)
@@ -77,6 +90,7 @@ namespace NetVox.UI.Views
                             var json = JsonSerializer.Serialize(selected, new JsonSerializerOptions { WriteIndented = true });
                             File.WriteAllText(dlg.FileName, json);
                             MessageBox.Show("Profile exported.");
+                            SaveProfiles();
                         }
                         catch (Exception ex)
                         {
@@ -94,6 +108,7 @@ namespace NetVox.UI.Views
                     {
                         ComboProfile.Items.Remove(selected);
                         TxtProfileName.Clear();
+                        SaveProfiles();
                     }
                 }
             };
@@ -101,7 +116,32 @@ namespace NetVox.UI.Views
 
         private void LoadProfiles()
         {
-            var profiles = new List<RadioProfile>
+            List<RadioProfile> profiles;
+
+            if (File.Exists(ProfileListPath))
+            {
+                try
+                {
+                    var json = File.ReadAllText(ProfileListPath);
+                    profiles = JsonSerializer.Deserialize<List<RadioProfile>>(json) ?? new List<RadioProfile>();
+                }
+                catch
+                {
+                    MessageBox.Show("Failed to load saved profiles. Loading defaults.");
+                    profiles = GetDefaultProfiles();
+                }
+            }
+            else
+            {
+                profiles = GetDefaultProfiles();
+            }
+
+            ComboProfile.ItemsSource = profiles;
+        }
+
+        private List<RadioProfile> GetDefaultProfiles()
+        {
+            return new List<RadioProfile>
             {
                 new RadioProfile { Brand = "Harris", Model = "AN/PRC-152" },
                 new RadioProfile { Brand = "Motorola", Model = "AN/PRC-153" },
@@ -112,16 +152,20 @@ namespace NetVox.UI.Views
                 new RadioProfile { Brand = "Harris", Model = "AN/PRC-25" },
                 new RadioProfile { Brand = "Tadiran", Model = "CNR-9101A" },
             };
-
-            ComboProfile.ItemsSource = profiles;
         }
 
-        private void ComboProfile_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void SaveProfiles()
         {
-            if (ComboProfile.SelectedItem is RadioProfile selected)
+            var profiles = new List<RadioProfile>();
+
+            foreach (var item in ComboProfile.Items)
             {
-                TxtProfileName.Text = selected.Model;
+                if (item is RadioProfile profile)
+                    profiles.Add(profile);
             }
+
+            var json = JsonSerializer.Serialize(profiles, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(ProfileListPath, json);
         }
     }
 }
