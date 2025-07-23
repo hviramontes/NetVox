@@ -5,6 +5,8 @@ using NetVox.Core.Utils;
 using NetVox.Persistence.Repositories;
 using NetVox.UI.Views;
 using System.Windows;
+using System.IO;
+
 
 namespace NetVox.UI
 {
@@ -14,12 +16,35 @@ namespace NetVox.UI
         private readonly IConfigRepository _repo;
         private readonly INetworkService _networkService;
         private readonly IPduService _pduService;
-        private Profile _profile = new();
+        private Profile _profile;
         private Views.ChannelManagementView _channelView = new();
 
         public MainWindow()
         {
             InitializeComponent();
+
+            try
+            {
+                string path = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                    "NetVox", "default.json");
+
+                if (File.Exists(path))
+                {
+                    _profile = new JsonConfigRepository().LoadProfile(path);
+                    System.Diagnostics.Debug.WriteLine($"Loaded profile with {_profile.Channels?.Count ?? 0} channels.");
+                }
+                else
+                {
+                    _profile = new Profile(); // fallback if not found
+                }
+            }
+            catch (Exception ex)
+            {
+                _profile = new Profile(); // fallback on error
+                System.Diagnostics.Debug.WriteLine($"Profile load failed: {ex.Message}");
+            }
+
 
             BtnChannelManagement.Click += (_, _) =>
             {
@@ -46,15 +71,39 @@ namespace NetVox.UI
                 System.Diagnostics.Debug.WriteLine("[PTT] Transmit Stopped"));
 
             // Set initial screen
-            Loaded += (_, _) => LoadInitialView();
+            Loaded += (_, _) =>
+            {
+                string path = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                    "NetVox", "default.json");
+
+                if (File.Exists(path))
+                {
+                    try
+                    {
+                        _profile = _repo.LoadProfile(path);
+                        System.Diagnostics.Debug.WriteLine($"Loaded profile with {_profile.Channels?.Count ?? 0} channels.");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Failed to load profile: {ex.Message}");
+                    }
+                }
+
+                LoadInitialView();
+            };
+
         }
 
         private void LoadInitialView()
         {
             MainContent.Content = new RadioProfileView();
+            TxtStatus.Text = $"Loaded profile with {_profile.Channels?.Count ?? 0} channels";
+
         }
 
-        private void SaveProfileToDisk()
+        public void SaveProfileToDisk()
+
         {
             string dir = System.IO.Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
@@ -71,6 +120,11 @@ namespace NetVox.UI
             {
                 System.Diagnostics.Debug.WriteLine($"Save failed: {ex.Message}");
             }
+        }
+
+        public Profile GetProfile()
+        {
+            return _profile;
         }
 
     }

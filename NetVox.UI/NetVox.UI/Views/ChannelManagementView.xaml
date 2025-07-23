@@ -2,36 +2,41 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:models="clr-namespace:NetVox.Core.Models;assembly=NetVox.Core"
-             MinHeight="400" MinWidth="600">
+             xmlns:local="clr-namespace:NetVox.UI.Views"
+             Height="Auto" Width="Auto">
     <Grid Margin="10">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Channel Table -->
         <DataGrid x:Name="GridChannels"
-                  Grid.Row="0"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  IsReadOnly="False"
-                  HeadersVisibility="Column"
-                  Margin="0 0 0 10"
-                  SelectionMode="Single"
-                  ItemsSource="{Binding}">
+          AutoGenerateColumns="False"
+          CanUserAddRows="False"
+          CanUserDeleteRows="False"
+          CanUserReorderColumns="False"
+          IsReadOnly="False"
+          SelectionMode="Single"
+          SelectionUnit="FullRow"
+          Margin="0,10,0,10"
+          Background="White"
+          HeadersVisibility="Column"
+          GridLinesVisibility="All">
+
             <DataGrid.Columns>
-                <DataGridTextColumn Header="#" Binding="{Binding ChannelNumber}" Width="50" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Channel #" Binding="{Binding ChannelNumber}" IsReadOnly="True" Width="*" />
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
-                <DataGridTextColumn Header="Frequency (MHz)" Binding="{Binding FrequencyMHz}" Width="150"/>
-                <DataGridTextColumn Header="Bandwidth (kHz)" Binding="{Binding BandwidthKHz}" Width="150"/>
+                <DataGridTextColumn Header="Frequency (Hz)" Binding="{Binding FrequencyHz}" Width="*" />
+                <DataGridTextColumn Header="Bandwidth (Hz)" Binding="{Binding BandwidthHz}" Width="*" />
             </DataGrid.Columns>
         </DataGrid>
 
-        <!-- Add/Delete Buttons -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 10 0 0">
-            <Button x:Name="BtnAddChannel" Content="Add" Width="80" Margin="0 0 10 0"/>
-            <Button x:Name="BtnDeleteChannel" Content="Delete" Width="80"/>
-            <Button x:Name="BtnSaveChannels" Content="Save" Width="80" Margin="10,0,0,0"/>
+
+        <!-- Button Panel -->
+        <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right">
+            <Button Content="➕ Add" Name="BtnAddChannel" Width="80" Margin="5" />
+            <Button Content="🗑 Delete" Name="BtnDeleteChannel" Width="80" Margin="5" />
+            <Button Content="💾 Save Channels" Name="BtnSave" Width="120" Margin="5" />
         </StackPanel>
     </Grid>
 </UserControl>

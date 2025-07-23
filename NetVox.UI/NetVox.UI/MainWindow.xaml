@@ -45,6 +45,11 @@
             <ColumnDefinition Width="220"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="30" />
+        </Grid.RowDefinitions>
+
 
         <!-- Left Nav Panel -->
         <StackPanel Background="#2D2D30" Grid.Column="0" Margin="10">
@@ -63,8 +68,13 @@
         </StackPanel>
 
         <!-- Content Area -->
-        <Border Grid.Column="1" Background="#FFF" Padding="10">
+        <Border Grid.Column="1" Grid.Row="0" Background="#FFF" Padding="10">
             <ContentControl Name="MainContent" />
         </Border>
+
+        <TextBlock Grid.Column="1" Grid.Row="1" Name="TxtStatus"
+           Background="#EEE" Foreground="Black"
+           FontSize="12" Padding="5" Text="Ready" />
+
     </Grid>
 </Window>
