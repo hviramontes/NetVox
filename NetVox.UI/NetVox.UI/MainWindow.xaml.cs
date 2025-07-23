@@ -15,10 +15,17 @@ namespace NetVox.UI
         private readonly INetworkService _networkService;
         private readonly IPduService _pduService;
         private Profile _profile = new();
+        private Views.ChannelManagementView _channelView = new();
 
         public MainWindow()
         {
             InitializeComponent();
+
+            BtnChannelManagement.Click += (_, _) =>
+            {
+                _channelView.LoadChannels(_profile);
+                MainContent.Content = _channelView;
+            };
 
             // Initialize services
             _repo = new JsonConfigRepository();
@@ -46,5 +53,25 @@ namespace NetVox.UI
         {
             MainContent.Content = new RadioProfileView();
         }
+
+        private void SaveProfileToDisk()
+        {
+            string dir = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "NetVox");
+            string path = System.IO.Path.Combine(dir, "default.json");
+
+            try
+            {
+                _profile.Channels = _channelView.GetCurrentChannels();
+                _repo.SaveProfile(_profile, path);
+                System.Diagnostics.Debug.WriteLine($"Saved profile to {path}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Save failed: {ex.Message}");
+            }
+        }
+
     }
 }
