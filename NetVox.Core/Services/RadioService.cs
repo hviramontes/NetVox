@@ -56,5 +56,19 @@ namespace NetVox.Core.Services
             TransmitStopped?.Invoke(this, EventArgs.Empty);
             return Task.CompletedTask;
         }
+
+        public void BeginTransmit()
+        {
+            _capture.Start();
+            TransmitStarted?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void EndTransmit()
+        {
+            _capture.Stop();
+            TransmitStopped?.Invoke(this, EventArgs.Empty);
+        }
+
+
     }
 }

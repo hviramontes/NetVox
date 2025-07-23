@@ -5,6 +5,9 @@ namespace NetVox.Core.Interfaces
 {
     public interface IRadioService
     {
+        void BeginTransmit();
+        void EndTransmit();
+
         /// <summary>Load a saved profile (channels, network, etc.) from disk.</summary>
         void LoadProfile(string filePath);
 
