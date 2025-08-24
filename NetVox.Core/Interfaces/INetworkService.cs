@@ -15,5 +15,10 @@ namespace NetVox.Core.Interfaces
         /// Get or set the current network configuration.
         /// </summary>
         NetworkConfig CurrentConfig { get; set; }
+
+        /// <summary>
+        /// Sends raw PDU bytes over UDP.
+        /// </summary>
+        Task SendBytesAsync(byte[] data);
     }
 }

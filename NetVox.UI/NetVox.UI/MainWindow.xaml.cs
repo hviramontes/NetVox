@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Input;
 using static NetVox.UI.Views.KeyboardSettingsView;
+using NetVox.Core.Models;
 
 namespace NetVox.UI
 {
@@ -36,26 +37,31 @@ namespace NetVox.UI
         {
             InitializeComponent();
 
-            // Load keybinds from config
-            string keybindsPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                "NetVox", "keybinds.json");
+            // Ensure NetVox folder exists
+            string basePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "NetVox");
+            Directory.CreateDirectory(basePath);
 
-            if (File.Exists(keybindsPath))
+            // Load keybinds from file (or create blank file)
+            string keybindsPath = Path.Combine(basePath, "keybinds.json");
+            if (!File.Exists(keybindsPath))
             {
-                try
-                {
-                    var json = File.ReadAllText(keybindsPath);
-                    var keybindConfig = JsonSerializer.Deserialize<KeybindConfig>(json);
-                    _pttKeyName = keybindConfig?.PttKey;
-                    _muteKeyName = keybindConfig?.MuteKey;
-                    _channelUpKeyName = keybindConfig?.ChannelUpKey;
-                    _channelDownKeyName = keybindConfig?.ChannelDownKey;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Failed to load keybinds: " + ex.Message);
-                }
+                var empty = new KeybindConfig();
+                var json = JsonSerializer.Serialize(empty, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(keybindsPath, json);
+            }
+
+            try
+            {
+                var json = File.ReadAllText(keybindsPath);
+                var keybindConfig = JsonSerializer.Deserialize<KeybindConfig>(json);
+                _pttKeyName = keybindConfig?.PttKey;
+                _muteKeyName = keybindConfig?.MuteKey;
+                _channelUpKeyName = keybindConfig?.ChannelUpKey;
+                _channelDownKeyName = keybindConfig?.ChannelDownKey;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to load keybinds: " + ex.Message);
             }
 
             // Start keyboard listener
@@ -64,27 +70,33 @@ namespace NetVox.UI
             _keyboardListener.KeyUp += OnGlobalKeyUp;
             _keyboardListener.Start();
 
-            // Load profile
-            try
-            {
-                string path = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                    "NetVox", "default.json");
+            // Load profile or create empty one
+            string profilePath = Path.Combine(basePath, "default.json");
 
-                if (File.Exists(path))
-                {
-                    _profile = new JsonConfigRepository().LoadProfile(path);
-                    System.Diagnostics.Debug.WriteLine($"Loaded profile with {_profile.Channels?.Count ?? 0} channels.");
-                }
-                else
-                {
-                    _profile = new Profile(); // fallback if not found
-                }
-            }
-            catch (Exception ex)
+            _repo = new JsonConfigRepository();
+            if (!File.Exists(profilePath))
             {
-                _profile = new Profile(); // fallback on error
-                System.Diagnostics.Debug.WriteLine($"Profile load failed: {ex.Message}");
+                _profile = new Profile
+                {
+                    Channels = new System.Collections.Generic.List<ChannelConfig>()
+                };
+                _repo.SaveProfile(_profile, profilePath);
+            }
+
+            else
+            {
+                try
+                {
+                    _profile = _repo.LoadProfile(profilePath);
+                }
+                catch
+                {
+                    _profile = new Profile
+                    {
+                        Channels = new System.Collections.Generic.List<ChannelConfig>()
+                    };
+                }
+
             }
 
             BtnChannelManagement.Click += (_, _) =>
@@ -99,14 +111,12 @@ namespace NetVox.UI
             };
 
             // Initialize services
-            _repo = new JsonConfigRepository();
             _networkService = new NetworkService();
             _pduService = new PduService(_networkService);
 
             var audioCapture = new AudioCaptureService();
             _radio = new RadioService(audioCapture, _pduService);
 
-            // Hook up service event logging
             _pduService.LogEvent += msg => Dispatcher.Invoke(() =>
                 System.Diagnostics.Debug.WriteLine($"[LOG] {msg}"));
 
@@ -116,7 +126,6 @@ namespace NetVox.UI
             _radio.TransmitStopped += (_, _) => Dispatcher.Invoke(() =>
                 System.Diagnostics.Debug.WriteLine("[PTT] Transmit Stopped"));
 
-            // Set initial screen
             Loaded += (_, _) =>
             {
                 LoadInitialView();
@@ -126,7 +135,8 @@ namespace NetVox.UI
         private void LoadInitialView()
         {
             MainContent.Content = new RadioProfileView();
-            if (_profile.Channels.Count > 0)
+
+            if (_profile?.Channels != null && _profile.Channels.Count > 0)
             {
                 _radio.SetChannel(_profile.Channels[_currentChannelIndex].ChannelNumber);
                 TxtStatus.Text = $"Ready – Channel {_profile.Channels[_currentChannelIndex].ChannelNumber}: {_profile.Channels[_currentChannelIndex].Name}";
@@ -137,11 +147,10 @@ namespace NetVox.UI
             }
         }
 
+
         public void SaveProfileToDisk()
         {
-            string dir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-                "NetVox");
+            string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "NetVox");
             string path = Path.Combine(dir, "default.json");
 
             try
@@ -159,14 +168,6 @@ namespace NetVox.UI
         public Profile GetProfile()
         {
             return _profile;
-        }
-
-        private class KeybindConfig
-        {
-            public string PttKey { get; set; }
-            public string MuteKey { get; set; }
-            public string ChannelUpKey { get; set; }
-            public string ChannelDownKey { get; set; }
         }
 
         private void OnGlobalKeyDown(Key key)
@@ -222,7 +223,14 @@ namespace NetVox.UI
 
             if (keyName.Equals(_pttKeyName, StringComparison.OrdinalIgnoreCase))
             {
-                if (_isMuted) return;
+                if (_isMuted || _profile.Channels.Count == 0)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        TxtStatus.Text = "Cannot transmit: No channel selected or muted";
+                    });
+                    return;
+                }
 
                 Dispatcher.Invoke(() =>
                 {

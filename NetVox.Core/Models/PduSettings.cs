@@ -20,5 +20,9 @@
 
         /// <summary>Which codec to use for the audio payload.</summary>
         public CodecType Codec { get; set; } = CodecType.Pcm16;
+
+        /// <summary>Radio frequency in Hz</summary>
+        public int FrequencyHz { get; set; } = 30000000; // Default to 30 MHz
+
     }
 }

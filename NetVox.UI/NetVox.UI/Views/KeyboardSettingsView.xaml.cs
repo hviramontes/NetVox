@@ -3,31 +3,39 @@ using System.IO;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
+using NetVox.Core.Models;
+
 
 namespace NetVox.UI.Views
 {
     public partial class KeyboardSettingsView : UserControl
     {
-        private readonly string ConfigPath = Path.Combine(
+        private readonly string ConfigFolder = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "NetVox", "keybinds.json");
+            "NetVox");
 
-        public class KeybindConfig
-        {
-            public string PttKey { get; set; }
-            public string MuteKey { get; set; }
-            public string ChannelUpKey { get; set; }
-            public string ChannelDownKey { get; set; }
-        }
+        private readonly string ConfigPath;
 
         public KeyboardSettingsView()
         {
             InitializeComponent();
 
+            ConfigPath = Path.Combine(ConfigFolder, "keybinds.json");
+
+            // Ensure folder and file exist
+            if (!Directory.Exists(ConfigFolder))
+                Directory.CreateDirectory(ConfigFolder);
+
+            if (!File.Exists(ConfigPath))
+            {
+                var empty = new KeybindConfig();
+                var json = JsonSerializer.Serialize(empty, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(ConfigPath, json);
+            }
+
             BtnSaveKeys.Click += BtnSaveKeys_Click;
 
-            if (File.Exists(ConfigPath))
-                LoadFromDisk();
+            LoadFromDisk();
         }
 
         private void BtnSaveKeys_Click(object sender, RoutedEventArgs e)
@@ -39,11 +47,6 @@ namespace NetVox.UI.Views
                 ChannelUpKey = TxtChannelUpKey.Text,
                 ChannelDownKey = TxtChannelDownKey.Text
             };
-
-            // Ensure the directory exists
-            string dir = Path.GetDirectoryName(ConfigPath);
-            if (!Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
 
             var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(ConfigPath, json);

@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using NetVox.Core.Interfaces;
+using NetVox.Core.Models;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using NetVox.Core.Interfaces;
-using NetVox.Core.Models;
 
 namespace NetVox.Core.Services
 {
@@ -25,5 +26,17 @@ namespace NetVox.Core.Services
                     .ToList()
             );
         }
+        public async Task SendBytesAsync(byte[] data)
+        {
+            using var udpClient = new System.Net.Sockets.UdpClient();
+            var config = CurrentConfig;
+
+            if (string.IsNullOrWhiteSpace(config.DestinationIP) || config.DestinationPort == 0)
+                throw new InvalidOperationException("Network destination is not configured.");
+
+            await udpClient.SendAsync(data, data.Length, config.DestinationIP, config.DestinationPort);
+        }
+
+
     }
 }
