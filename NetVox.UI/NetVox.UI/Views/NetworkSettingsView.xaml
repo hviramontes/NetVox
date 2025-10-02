@@ -1,0 +1,85 @@
+﻿<UserControl x:Class="NetVox.UI.Views.NetworkSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Height="Auto" Width="Auto">
+    <Grid Margin="10">
+        <!-- Two rows: content + bottom Apply bar -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!-- Two columns: form (flex) + tips (fixed) -->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="280"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- LEFT: form -->
+        <Grid Grid.Row="0" Grid.Column="0" Margin="0,0,12,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Local IP -->
+            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Local IP:"/>
+            <ComboBox x:Name="ComboLocalIP" Grid.Row="0" Grid.Column="1" Margin="5"/>
+
+            <!-- Group/Broadcast address -->
+            <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Broadcast/Multicast address:"/>
+            <TextBox x:Name="TxtGroupAddress" Grid.Row="1" Grid.Column="1" Margin="5"/>
+
+            <!-- Port -->
+            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Port:"/>
+            <TextBox x:Name="TxtPort" Grid.Row="2" Grid.Column="1" Margin="5"/>
+
+            <!-- TTL -->
+            <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Time to Live (Multicast TTL):"/>
+            <TextBox x:Name="TxtTtl" Grid.Row="3" Grid.Column="1" Margin="5" Text="60"/>
+
+            <!-- Traffic Class -->
+            <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Multicast Traffic Class:"/>
+            <TextBox x:Name="TxtTrafficClass" Grid.Row="4" Grid.Column="1" Margin="5" Text="0"/>
+
+            <!-- Signal Packet Length -->
+            <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Signal Data Packet Length (Bytes):"/>
+            <TextBox x:Name="TxtSignalPacketLen" Grid.Row="5" Grid.Column="1" Margin="5" Text="960"/>
+
+            <!-- Heartbeat -->
+            <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Radio Heartbeat Timeout (ms):"/>
+            <TextBox x:Name="TxtHeartbeatMs" Grid.Row="6" Grid.Column="1" Margin="5" Text="120000"/>
+        </Grid>
+
+        <!-- RIGHT: tips -->
+        <Border Grid.Row="0" Grid.Column="1" Padding="10" Background="#F8F8F8" BorderBrush="#DDD" BorderThickness="1">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <TextBlock x:Name="TxtNetTips"
+                           TextWrapping="Wrap"
+                           FontSize="13"
+                           Foreground="#333"
+                           Text="Networking tips:
+• Local IP is the NIC you’ll bind for UDP.
+• Destination can be multicast or broadcast; runtime will auto-detect mode.
+• TTL applies to multicast scope (default 60).
+• Traffic Class sets DSCP/ToS for multicast (default 0).
+• Signal Data Packet Length is the size of voice payload bytes (default 960).
+• Heartbeat timeout controls when a radio is considered offline (default 120000 ms)."/>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Bottom Apply bar -->
+        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                    Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button x:Name="BtnApply" Content="Apply" Width="90" />
+        </StackPanel>
+    </Grid>
+</UserControl>

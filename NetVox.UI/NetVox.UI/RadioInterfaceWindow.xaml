@@ -1,0 +1,173 @@
+﻿<Window x:Class="NetVox.UI.RadioInterfaceWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="NetVox Radio"
+        Height="220" Width="520"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Background="#111318"
+        Foreground="#E8E8E8"
+        FontFamily="Segoe UI"
+        FontSize="14">
+
+    <Grid Margin="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="160" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="48"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top: RECEIVING banner (hidden unless actively receiving) -->
+        <Border x:Name="RxBanner"
+                Grid.Row="0" Grid.ColumnSpan="2"
+                Visibility="Collapsed"
+                Background="#163822"
+                BorderBrush="#2E6B40" BorderThickness="1"
+                CornerRadius="6"
+                Padding="8,4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Receiving"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"/>
+                <TextBlock x:Name="TxtRxChannel"
+                           Grid.Column="2"
+                           Text="Channel —"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+            </Grid>
+        </Border>
+
+        <!-- Center: status panel that changes color -->
+        <Border x:Name="StatusPanel"
+                Grid.Row="1" Grid.Column="0"
+                Margin="0,6,8,6"
+                CornerRadius="8"
+                Background="#1F252B"
+                BorderBrush="#2D3742" BorderThickness="1">
+            <Grid>
+                <TextBlock x:Name="TxtStatus"
+                           Text="READY"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontSize="28"
+                           FontWeight="SemiBold"
+                           Opacity="0.95"/>
+            </Grid>
+        </Border>
+
+        <!-- Right side: BIG TRANSMIT button (spans rows 0-1) -->
+        <Button x:Name="BtnTransmit"
+                Grid.Row="0" Grid.RowSpan="2" Grid.Column="1"
+                Margin="0,0,0,6"
+                FontSize="18"
+                Content="Transmit"
+                ToolTip="Push-to-talk: hold to transmit"
+                Padding="12"
+                Cursor="Hand">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="TxBorder"
+                            Background="#2A3340"
+                            BorderBrush="#3A4656"
+                            BorderThickness="1.5"
+                            CornerRadius="10">
+                        <Grid>
+                            <Viewbox Stretch="Uniform" Margin="8,8,8,16">
+                                <TextBlock Text="{TemplateBinding Content}" FontWeight="Bold" />
+                            </Viewbox>
+                            <TextBlock Text="PTT"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Bottom"
+                                       Margin="0,0,0,8"
+                                       Opacity="0.75"/>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="TxBorder" Property="Background" Value="#913131"/>
+                            <Setter TargetName="TxBorder" Property="BorderBrush" Value="#B34A4A"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="TxBorder" Property="Opacity" Value="0.55"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+
+        <!-- Bottom-left: channel controls only (more room for text) -->
+        <Grid Grid.Row="2" Grid.Column="0" Margin="0,6,8,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <!-- 0: Ch Down -->
+                <ColumnDefinition Width="*"/>
+                <!-- 1: Channel text -->
+                <ColumnDefinition Width="Auto"/>
+                <!-- 2: Ch Up -->
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="BtnChannelDown"
+                    Grid.Column="0"
+                    Content="◀"
+                    Width="44" Height="38"
+                    ToolTip="Channel down"
+                    Cursor="Hand"/>
+
+            <Border Grid.Column="1"
+                    Margin="8,0"
+                    CornerRadius="6"
+                    Background="#1D2229"
+                    BorderBrush="#2D3742" BorderThickness="1">
+                <TextBlock x:Name="TxtChannel"
+                           Text="Channel 0 [32.000 MHz]"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Stretch"
+                           TextAlignment="Center"
+                           TextWrapping="NoWrap"
+                           TextTrimming="CharacterEllipsis"
+                           FontWeight="SemiBold"
+                           Padding="10,6"
+                           ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+            </Border>
+
+            <Button x:Name="BtnChannelUp"
+                    Grid.Column="2"
+                    Content="▶"
+                    Width="44" Height="38"
+                    ToolTip="Channel up"
+                    Cursor="Hand"/>
+        </Grid>
+
+        <!-- Bottom-right: Mute + Stop side-by-side -->
+        <Grid Grid.Row="2" Grid.Column="1" Margin="0,6,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <ToggleButton x:Name="BtnMute"
+                          Grid.Column="0"
+                          Content="Mute"
+                          Width="74" Height="38"
+                          Cursor="Hand"/>
+
+            <Button x:Name="BtnStop"
+                    Grid.Column="2"
+                    Content="Stop"
+                    Width="74" Height="38"
+                    ToolTip="Stop radio and return to main window"
+                    Cursor="Hand"/>
+        </Grid>
+    </Grid>
+</Window>

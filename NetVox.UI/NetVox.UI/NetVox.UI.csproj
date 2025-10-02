@@ -11,6 +11,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\NetVox.Core\NetVox.Core.csproj" />
     <ProjectReference Include="..\..\NetVox.Persistence\NetVox.Persistence.csproj" />
+	
+    <Compile Remove="NetworkSettingsWindow.xaml.cs" />
+    <Page Remove="NetworkSettingsWindow.xaml" />
   </ItemGroup>
 
 </Project>

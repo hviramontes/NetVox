@@ -1,5 +1,8 @@
 ﻿using NetVox.Core.Models;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -7,7 +10,7 @@ namespace NetVox.UI.Views
 {
     public partial class ChannelManagementView : UserControl
     {
-        private ObservableCollection<ChannelConfig> _channels;
+        private readonly ObservableCollection<ChannelConfig> _channels;
 
         public ChannelManagementView()
         {
@@ -17,30 +20,15 @@ namespace NetVox.UI.Views
             GridChannels.ItemsSource = _channels;
             GridChannels.RowEditEnding += GridChannels_RowEditEnding;
 
-
             BtnAddChannel.Click += BtnAddChannel_Click;
             BtnDeleteChannel.Click += BtnDeleteChannel_Click;
             BtnSave.Click += BtnSave_Click;
-
-
         }
 
-        private void BtnAddChannel_Click(object sender, RoutedEventArgs e)
+        private void BtnAddChannel_Click(object? sender, RoutedEventArgs e)
         {
-            int nextChannel = 0;
-            int nextFrequency = 30_000_000;
-
-            // Get used channel numbers and frequencies
-            var usedChannels = _channels.Select(c => c.ChannelNumber).ToHashSet();
-            var usedFrequencies = _channels.Select(c => c.FrequencyHz).ToHashSet();
-
-            // Find next unused channel number
-            while (usedChannels.Contains(nextChannel))
-                nextChannel++;
-
-            // Find next unused frequency in 25 kHz steps
-            while (usedFrequencies.Contains(nextFrequency))
-                nextFrequency += 25_000;
+            int nextChannel = GetNextAvailableChannelNumber();      // allow 0, find first free non-negative
+            long nextFrequency = GetNextAvailableFrequencyHz();     // 25 kHz steps, starting at 30 MHz
 
             _channels.Add(new ChannelConfig
             {
@@ -50,10 +38,10 @@ namespace NetVox.UI.Views
                 BandwidthHz = 44_000
             });
 
+            UpdateStatusBar($"Added channel #{nextChannel} at {nextFrequency:N0} Hz");
         }
 
-
-        private void BtnDeleteChannel_Click(object sender, RoutedEventArgs e)
+        private void BtnDeleteChannel_Click(object? sender, RoutedEventArgs e)
         {
             if (GridChannels.SelectedItem is ChannelConfig selected)
             {
@@ -62,40 +50,37 @@ namespace NetVox.UI.Views
             }
         }
 
+        /// <summary>
+        /// Load channels from a profile WITHOUT renumbering them.
+        /// Only falls back if values are missing/invalid.
+        /// </summary>
         public void LoadChannels(Profile profile)
         {
+            if (profile == null) return;
+
             _channels.Clear();
 
-            var usedChannelNumbers = new HashSet<int>();
-            var usedFrequencies = new HashSet<int>();
-
-            foreach (var chan in profile.Channels)
+            foreach (var chan in profile.Channels ?? Enumerable.Empty<ChannelConfig>())
             {
-                // Auto-assign next unused channel number
-                int nextChannel = 0;
-                while (usedChannelNumbers.Contains(nextChannel))
-                    nextChannel++;
-
-                // Auto-assign next unused frequency in 25kHz steps
-                int nextFrequency = 30_000_000;
-                while (usedFrequencies.Contains(nextFrequency))
-                    nextFrequency += 25_000;
+                // Keep zero. Only replace if negative.
+                int channelNumber = chan.ChannelNumber >= 0 ? chan.ChannelNumber : GetNextAvailableChannelNumber();
+                long frequencyHz = chan.FrequencyHz > 0 ? chan.FrequencyHz : GetNextAvailableFrequencyHz();
+                int bandwidthHz = chan.BandwidthHz > 0 ? chan.BandwidthHz : 44_000;
+                string name = string.IsNullOrWhiteSpace(chan.Name) ? $"CHAN{channelNumber}" : chan.Name;
 
                 _channels.Add(new ChannelConfig
                 {
-                    ChannelNumber = nextChannel,
-                    Name = $"CHAN{nextChannel}",
-                    FrequencyHz = nextFrequency,
-                    BandwidthHz = chan.BandwidthHz > 0 ? chan.BandwidthHz : 44_000
+                    ChannelNumber = channelNumber,
+                    Name = name,
+                    FrequencyHz = frequencyHz,
+                    BandwidthHz = bandwidthHz
                 });
-
-                usedChannelNumbers.Add(nextChannel);
-                usedFrequencies.Add(nextFrequency);
             }
+
+            UpdateStatusBar($"Loaded {_channels.Count} channels");
         }
 
-
-
+        /// <summary>Write the current grid back to the profile.</summary>
         public void SaveChannels(Profile profile)
         {
             profile.Channels.Clear();
@@ -111,29 +96,42 @@ namespace NetVox.UI.Views
             }
         }
 
-        public List<ChannelConfig> GetCurrentChannels()
-        {
-            return new List<ChannelConfig>(_channels);
-        }
+        public List<ChannelConfig> GetCurrentChannels() => new List<ChannelConfig>(_channels);
 
-        private void BtnSave_Click(object sender, RoutedEventArgs e)
+        private void BtnSave_Click(object? sender, RoutedEventArgs e)
         {
             if (Window.GetWindow(this) is MainWindow main)
             {
                 SaveChannels(main.GetProfile());
                 main.SaveProfileToDisk();
                 UpdateStatusBar($"Saved {_channels.Count} channels");
-
             }
-
         }
 
-        private void GridChannels_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e)
+        private void GridChannels_RowEditEnding(object? sender, DataGridRowEditEndingEventArgs e)
         {
-            if (App.Current.MainWindow is MainWindow main)
+            if (Application.Current.MainWindow is MainWindow main)
             {
+                SaveChannels(main.GetProfile());
                 main.SaveProfileToDisk();
+                UpdateStatusBar("Changes saved");
             }
+        }
+
+        private int GetNextAvailableChannelNumber()
+        {
+            HashSet<int> used = _channels.Select(c => c.ChannelNumber).ToHashSet();
+            int n = 0; // allow zero; pick the smallest non-negative integer not used
+            while (used.Contains(n)) n++;
+            return n;
+        }
+
+        private long GetNextAvailableFrequencyHz()
+        {
+            HashSet<long> used = _channels.Select(c => c.FrequencyHz).ToHashSet();
+            long f = 30_000_000L; // 30 MHz baseline
+            while (used.Contains(f)) f += 25_000L; // 25 kHz steps
+            return f;
         }
 
         private void UpdateStatusBar(string message)
@@ -143,8 +141,5 @@ namespace NetVox.UI.Views
                 main.TxtStatus.Text = message;
             }
         }
-
-
-
     }
 }

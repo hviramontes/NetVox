@@ -1,0 +1,42 @@
+﻿<UserControl x:Class="NetVox.UI.Views.RadioTransmitView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="700">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Radio Transmit" FontSize="22" FontWeight="Bold" Margin="0,0,0,10"/>
+
+        <Border Grid.Row="1" Padding="16" Background="#F7F7F7" BorderBrush="#DDD" BorderThickness="1" CornerRadius="8">
+            <StackPanel>
+                <TextBlock Text="Status" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                <WrapPanel Margin="0,0,0,8">
+                    <TextBlock Text="Armed: " FontWeight="SemiBold"/>
+                    <TextBlock x:Name="TxtArmed" Text="Stopped"/>
+                </WrapPanel>
+                <WrapPanel Margin="0,0,0,8">
+                    <TextBlock Text="Transmit: " FontWeight="SemiBold"/>
+                    <TextBlock x:Name="TxtTx" Text="Idle"/>
+                </WrapPanel>
+                <WrapPanel Margin="0,0,0,8">
+                    <TextBlock Text="Mute: " FontWeight="SemiBold"/>
+                    <TextBlock x:Name="TxtMute" Text="Unmuted"/>
+                </WrapPanel>
+                <WrapPanel Margin="0,0,0,8">
+                    <TextBlock Text="Channel: " FontWeight="SemiBold"/>
+                    <TextBlock x:Name="TxtChannel" Text="—"/>
+                </WrapPanel>
+
+                <TextBlock Margin="0,16,0,0"
+                           Text="Press and hold your PTT hotkey to transmit. Release to stop."
+                           Foreground="#666"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

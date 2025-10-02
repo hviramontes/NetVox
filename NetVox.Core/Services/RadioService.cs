@@ -1,4 +1,5 @@
-﻿using System;
+﻿// File: NetVox.Core/Services/RadioService.cs
+using System;
 using System.Threading.Tasks;
 using NetVox.Core.Interfaces;
 using NetVox.Core.Models;
@@ -6,69 +7,145 @@ using NetVox.Core.Models;
 namespace NetVox.Core.Services
 {
     /// <summary>
-    /// Captures audio and sends it as DIS Signal PDUs.
+    /// Drives PTT lifecycle and forwards captured audio to the PDU layer.
+    /// Responsibilities:
+    ///  - Maintain current channel
+    ///  - Start/Stop TX (PTT)
+    ///  - Forward audio chunks to IPduService
+    ///  - Fire TransmitStarted/Stopped events
     /// </summary>
-    public class RadioService : IRadioService
+    public sealed class RadioService : IRadioService
     {
-        private readonly AudioCaptureService _capture;
-        private readonly IPduService _pduService;
+        private readonly IPduService _pdu;
+        private readonly AudioCaptureService _capture; // adjust to your actual capture interface if needed
+        private readonly object _gate = new();
 
-        public event EventHandler TransmitStarted;
-        public event EventHandler TransmitStopped;
+        private volatile bool _isTransmitting;
+        private int _currentChannelNumber;
 
-        public RadioService(AudioCaptureService captureService, IPduService pduService)
+        public event EventHandler? TransmitStarted;
+        public event EventHandler? TransmitStopped;
+
+        public RadioService(AudioCaptureService capture, IPduService pdu)
         {
-            _capture = captureService;
-            _pduService = pduService;
+            _capture = capture ?? throw new ArgumentNullException(nameof(capture));
+            _pdu = pdu ?? throw new ArgumentNullException(nameof(pdu));
 
-            // Every time audio is available, send it as a PDU
-            _capture.AudioAvailable += async (_, buffer) =>
-            {
-                await _pduService.SendSignalPduAsync(buffer);
-            };
+            // Hook capture callback (adjust the event name/signature if your capture differs)
+            _capture.BytesCaptured += OnBytesCaptured;
         }
 
-        public void LoadProfile(string filePath)
+        /// <summary>Expose PDU settings so UI/app can read/write through the radio.</summary>
+        public PduSettings Settings
         {
-            // No-op or implement if you like
+            get => _pdu.Settings;
+            set => _pdu.Settings = value ?? throw new ArgumentNullException(nameof(value));
         }
 
-        public void SaveProfile(string filePath)
-        {
-            // No-op or implement if you like
-        }
-
+        /// <summary>Set the logical channel (map to radio id/frequency elsewhere as needed).</summary>
         public void SetChannel(int channelNumber)
         {
-            // No-op for now
+            lock (_gate)
+            {
+                _currentChannelNumber = channelNumber;
+                // Example if you map channel -> radio id:
+                // _pdu.Settings.RadioId = (ushort)channelNumber;
+            }
         }
 
-        public Task StartTransmitAsync()
+        /// <summary>Sync wrapper for UI: begin PTT.</summary>
+        public void BeginTransmit() => _ = StartTransmitAsync();
+
+        /// <summary>Sync wrapper for UI: end PTT.</summary>
+        public void EndTransmit() => _ = StopTransmitAsync();
+
+        /// <summary>Start transmitting (PTT ON).</summary>
+        public async Task StartTransmitAsync()
         {
-            _capture.Start();
-            TransmitStarted?.Invoke(this, EventArgs.Empty);
-            return Task.CompletedTask;
+            lock (_gate)
+            {
+                if (_isTransmitting) return;
+                _isTransmitting = true;
+            }
+
+            try
+            {
+                // Start capture for the configured sample rate
+                _capture.Start(_pdu.Settings.SampleRate);
+
+                // DIS Transmitter PDU: ON
+                await _pdu.SendTransmitterPduAsync(isOn: true).ConfigureAwait(false);
+
+                _pdu.Log($"[PTT] Transmit Started (ch={_currentChannelNumber}, sr={_pdu.Settings.SampleRate}, codec={_pdu.Settings.Codec})");
+                TransmitStarted?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                _pdu.Log($"[PTT] Start failed: {ex.Message}");
+                lock (_gate) { _isTransmitting = false; }
+                try { _capture.Stop(); } catch { /* ignore */ }
+                throw;
+            }
         }
 
-        public Task StopTransmitAsync()
+        /// <summary>Stop transmitting (PTT OFF).</summary>
+        public async Task StopTransmitAsync()
         {
-            _capture.Stop();
-            TransmitStopped?.Invoke(this, EventArgs.Empty);
-            return Task.CompletedTask;
+            bool wasTx;
+            lock (_gate)
+            {
+                wasTx = _isTransmitting;
+                _isTransmitting = false;
+            }
+            if (!wasTx) return;
+
+            try
+            {
+                // Stop capture so no further bytes arrive
+                _capture.Stop();
+
+                // Flush any partial audio still buffered for a final Signal PDU
+                _pdu.FlushSignalHold();
+
+                // DIS Transmitter PDU: OFF
+                await _pdu.SendTransmitterPduAsync(isOn: false).ConfigureAwait(false);
+
+                _pdu.Log("[PTT] Transmit Stopped");
+                TransmitStopped?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                _pdu.Log($"[PTT] Stop failed: {ex.Message}");
+                throw;
+            }
         }
 
-        public void BeginTransmit()
+        /// <summary>
+        /// Called when the capture layer produces a chunk of audio.
+        /// Forwards to the PDU layer if PTT is active.
+        /// </summary>
+        private void OnBytesCaptured(byte[] buffer, int count)
         {
-            _capture.Start();
-            TransmitStarted?.Invoke(this, EventArgs.Empty);
+            if (buffer == null || count <= 0) return;
+            if (!_isTransmitting) return;
+
+            // Let PDU layer frame and send Signal PDUs
+            _ = _pdu.SendSignalPduAsync(buffer, 0, count);
         }
 
-        public void EndTransmit()
+        // ===== Interface persistence hooks (void signatures per IRadioService) =====
+
+        public void SaveProfile(string fileName)
         {
-            _capture.Stop();
-            TransmitStopped?.Invoke(this, EventArgs.Empty);
+            // If your app persists via a repository elsewhere, call it from here.
+            // This no-op implementation simply logs to avoid breaking builds.
+            _pdu.Log($"[Radio] SaveProfile('{fileName}') (no-op in RadioService)");
         }
 
-
+        public void LoadProfile(string fileName)
+        {
+            // Likewise, wire up to your repository if needed.
+            _pdu.Log($"[Radio] LoadProfile('{fileName}') (no-op in RadioService)");
+        }
     }
 }

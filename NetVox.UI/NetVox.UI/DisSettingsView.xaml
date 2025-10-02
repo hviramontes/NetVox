@@ -1,0 +1,349 @@
+﻿<UserControl x:Class="NetVox.UI.Views.DisSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="900">
+    <!-- Shared field styles -->
+    <UserControl.Resources>
+        <Style x:Key="FieldTextBox" TargetType="TextBox">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="MinWidth" Value="220"/>
+        </Style>
+        <Style x:Key="FieldCombo" TargetType="ComboBox">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="MinWidth" Value="220"/>
+            <Setter Property="IsTextSearchEnabled" Value="False"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TabControl Grid.Row="0">
+
+            <!-- DIS & CRYPTO -->
+            <TabItem Header="DIS &amp; CRYPTO">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Vertical">
+                        <GroupBox Header="DIS Version" Margin="0,0,0,12">
+                            <Grid Margin="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="Protocol Version:"/>
+                                <ComboBox x:Name="ComboVersion" Grid.Column="1" Style="{StaticResource FieldCombo}"/>
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox Header="Crypto">
+                            <Grid Margin="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Crypto Systems:"/>
+                                <ComboBox x:Name="ComboCryptoSystem" Grid.Row="0" Grid.Column="1" Style="{StaticResource FieldCombo}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Crypto Key ID:"/>
+                                <TextBox x:Name="TxtCryptoKeyId" Grid.Row="1" Grid.Column="1" Style="{StaticResource FieldTextBox}"/>
+                            </Grid>
+                        </GroupBox>
+                    </StackPanel>
+
+                    <Border Grid.Row="1" Margin="0,12,0,0" Padding="10" Background="#F8F8F8" BorderBrush="#DDD" BorderThickness="1">
+                        <TextBlock Text="Configure DIS version and crypto parameters. Encryption is considered enabled whenever a non-zero crypto system is selected."
+                                   TextWrapping="Wrap" FontSize="13" Foreground="#333"/>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ENTITY -->
+            <TabItem Header="ENTITY">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Form -->
+                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Automatic ID -->
+                        <CheckBox x:Name="CheckAutoRadioId" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                                  Margin="0,0,0,6" Content="Automatic Radio ID" />
+
+                        <!-- Radio ID -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Radio ID (0–65535):"/>
+                        <TextBox x:Name="TxtRadioId" Grid.Row="1" Grid.Column="1" Style="{StaticResource FieldTextBox}"/>
+
+                        <!-- Nomenclature Version -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Nomenclature Version:"/>
+                        <TextBox x:Name="TxtNomenclatureVersion" Grid.Row="2" Grid.Column="1" Style="{StaticResource FieldTextBox}"/>
+
+                        <!-- Nomenclature -->
+                        <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Nomenclature:"/>
+                        <TextBox x:Name="TxtNomenclature" Grid.Row="3" Grid.Column="1" Style="{StaticResource FieldTextBox}"/>
+
+                        <!-- Input Source -->
+                        <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Input Source:"/>
+                        <ComboBox x:Name="ComboInputSource" Grid.Row="4" Grid.Column="1" Style="{StaticResource FieldCombo}"/>
+
+                        <!-- Entity Kind -->
+                        <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Entity Kind:"/>
+                        <ComboBox x:Name="ComboEntityKind" Grid.Row="5" Grid.Column="1" Style="{StaticResource FieldCombo}"/>
+
+                        <!-- Domain -->
+                        <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Domain:"/>
+                        <ComboBox x:Name="ComboDomain" Grid.Row="6" Grid.Column="1" Style="{StaticResource FieldCombo}"/>
+
+                        <!-- Category -->
+                        <TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Category:"/>
+                        <TextBox x:Name="TxtCategory" Grid.Row="7" Grid.Column="1" Style="{StaticResource FieldTextBox}"/>
+
+                        <!-- Country -->
+                        <TextBlock Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" Text="Country:"/>
+                        <ComboBox x:Name="ComboCountry" Grid.Row="8" Grid.Column="1" Style="{StaticResource FieldCombo}"/>
+                    </Grid>
+
+                    <Border Grid.Row="1" Padding="10" Background="#F8F8F8" BorderBrush="#DDD" BorderThickness="1">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <TextBlock x:Name="TxtTips"
+                                       TextWrapping="Wrap"
+                                       FontSize="13"
+                                       Foreground="#333"/>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- LOCATION -->
+            <TabItem Header="LOCATION">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Upper content: left + right groups -->
+                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- LEFT: Absolute / Attach selection -->
+                        <GroupBox Grid.Column="0" Header="Radio Antenna Location" Margin="0,0,12,0">
+                            <Grid Margin="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*" MinWidth="300"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Attach to Entity By:"/>
+                                <ComboBox x:Name="ComboAttachBy" Grid.Row="0" Grid.Column="1" Style="{StaticResource FieldCombo}">
+                                    <ComboBoxItem Content="NONE"/>
+                                    <ComboBoxItem Content="Entity ID"/>
+                                    <ComboBoxItem Content="Entity Marking"/>
+                                </ComboBox>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Entity Marking:"/>
+                                <TextBox x:Name="TxtEntityMarking" Grid.Row="1" Grid.Column="1" Style="{StaticResource FieldTextBox}" IsEnabled="False"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Exercise ID:"/>
+                                <TextBox x:Name="TxtExerciseId" Grid.Row="2" Grid.Column="1" Style="{StaticResource FieldTextBox}"/>
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Site ID:"/>
+                                <TextBox x:Name="TxtSiteId" Grid.Row="3" Grid.Column="1" Style="{StaticResource FieldTextBox}"/>
+
+                                <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Application ID:"/>
+                                <TextBox x:Name="TxtApplicationId" Grid.Row="4" Grid.Column="1" Style="{StaticResource FieldTextBox}"/>
+
+                                <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Entity ID:"/>
+                                <TextBox x:Name="TxtEntityId" Grid.Row="5" Grid.Column="1" Style="{StaticResource FieldTextBox}"/>
+
+                                <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Absolute X:"/>
+                                <TextBox x:Name="TxtAbsX" Grid.Row="6" Grid.Column="1" Style="{StaticResource FieldTextBox}" Text="0.0"/>
+
+                                <TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Absolute Y:"/>
+                                <TextBox x:Name="TxtAbsY" Grid.Row="7" Grid.Column="1" Style="{StaticResource FieldTextBox}" Text="0.0"/>
+
+                                <TextBlock Grid.Row="8" Grid.Column="0" VerticalAlignment="Center" Text="Absolute Z:"/>
+                                <TextBox x:Name="TxtAbsZ" Grid.Row="8" Grid.Column="1" Style="{StaticResource FieldTextBox}" Text="0.0"/>
+                            </Grid>
+                        </GroupBox>
+
+                        <!-- RIGHT: Relative -->
+                        <GroupBox Grid.Column="1" Header="Relative Offset (meters)">
+                            <Grid Margin="10,10,20,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*" MinWidth="400"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Relative X:"/>
+                                <TextBox x:Name="TxtRelX" Grid.Row="0" Grid.Column="1" Style="{StaticResource FieldTextBox}" IsEnabled="False"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Relative Y:"/>
+                                <TextBox x:Name="TxtRelY" Grid.Row="1" Grid.Column="1" Style="{StaticResource FieldTextBox}" IsEnabled="False"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Relative Z:"/>
+                                <TextBox x:Name="TxtRelZ" Grid.Row="2" Grid.Column="1" Style="{StaticResource FieldTextBox}" IsEnabled="False"/>
+                            </Grid>
+                        </GroupBox>
+                    </Grid>
+
+                    <Border Grid.Row="1" Padding="10" Background="#F8F8F8" BorderBrush="#DDD" BorderThickness="1">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <TextBlock x:Name="TxtLocTips"
+                                       Text="Choose how to attach the antenna location. If NONE, use Absolute X/Y/Z (meters). If Entity ID or Entity Marking, use Relative X/Y/Z."
+                                       TextWrapping="Wrap" FontSize="13" Foreground="#333"/>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ANTENNA CONFIGURATION -->
+            <TabItem Header="ANTENNA CONFIGURATION">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Upper content -->
+                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Pattern Type -->
+                        <GroupBox Grid.Column="0" Header="Pattern Type" Margin="0,0,12,0">
+                            <Grid Margin="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto" MaxWidth="250"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Type:"/>
+                                <ComboBox x:Name="ComboPatternType" Grid.Row="0" Grid.Column="1" Style="{StaticResource FieldCombo}" 
+                                          Width="220" Height="25" MaxDropDownHeight="200">
+                                    <ComboBoxItem Content="0 Omnidirectional"/>
+                                    <ComboBoxItem Content="1 Directional (Beam)"/>
+                                </ComboBox>
+                            </Grid>
+                        </GroupBox>
+
+                        <!-- Modulation -->
+                        <GroupBox Grid.Column="1" Header="Modulation">
+                            <Grid Margin="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*" MinWidth="350"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Power -->
+                                <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Power (w):"/>
+                                <TextBox x:Name="TxtPowerW" Grid.Row="0" Grid.Column="1" Style="{StaticResource FieldTextBox}" Text="0.0"/>
+
+                                <!-- Major Type -->
+                                <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="Major Type:"/>
+                                <!-- NOTE: Items removed; fed by code-behind from DisModulationCatalog -->
+                                <ComboBox x:Name="ComboMajorType" Grid.Row="1" Grid.Column="1" Style="{StaticResource FieldCombo}" />
+
+                                <!-- Spread Spectrum -->
+                                <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Top" Text="Spread Spectrum:"/>
+                                <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Vertical" Margin="5,0,0,0" HorizontalAlignment="Left">
+                                    <CheckBox x:Name="ChkSpreadFH" Content="Frequency Hopping" Margin="0,2,0,2"/>
+                                    <CheckBox x:Name="ChkSpreadPN" Content="Pseudo-Noise" Margin="0,2,0,2"/>
+                                    <CheckBox x:Name="ChkSpreadTH" Content="Time Hopping" Margin="0,2,0,2"/>
+                                </StackPanel>
+
+                                <!-- Detail -->
+                                <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Detail:"/>
+                                <ComboBox x:Name="ComboDetail" Grid.Row="3" Grid.Column="1" Style="{StaticResource FieldCombo}"/>
+
+                                <!-- System -->
+                                <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="System:"/>
+                                <ComboBox x:Name="ComboSystem" Grid.Row="4" Grid.Column="1" Style="{StaticResource FieldCombo}"/>
+                            </Grid>
+                        </GroupBox>
+                    </Grid>
+
+                    <Border Grid.Row="1" Padding="10" Background="#F8F8F8" BorderBrush="#DDD" BorderThickness="1">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <TextBlock x:Name="TxtModTips"
+                                       Text="Antenna Configuration:
+• Pattern Type controls radiation shape.
+• Set transmit Power in watts.
+• Choose a Major Type. Detail and System choices depend on it.
+• Use Spread Spectrum flags as needed."
+                                       TextWrapping="Wrap" FontSize="13" Foreground="#333"/>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <!-- Apply button footer -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button x:Name="BtnApply" Content="Apply" Width="100"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

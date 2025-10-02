@@ -3,3 +3,19 @@ obj/
 .vs/
 *.user
 *.suo
+# Build output
+**/bin/
+**/obj/
+.vs/
+
+# Publish artifacts / zips
+Publish/
+**/*.zip
+
+# Captures and logs
+**/*.pcap
+**/*.pcapng
+**/*.log
+
+# Local settings
+**/*.user

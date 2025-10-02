@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -9,163 +8,61 @@ namespace NetVox.UI.Views
 {
     public partial class RadioProfileView : UserControl
     {
-        private readonly string ProfileFolder = System.IO.Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "NetVox", "Profiles");
-
-        private readonly string ProfileListPath = System.IO.Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "NetVox", "Profiles", "profiles.json");
-
-        public class RadioProfile
-        {
-            public string Brand { get; set; }
-            public string Model { get; set; }
-            public string Display => $"{Brand} {Model}";
-        }
-
-        // Handle dropdown change
-        private void ComboProfile_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (ComboProfile.SelectedItem is RadioProfile selected)
+        // Profile -> (MinHz, MaxHz)
+        private readonly Dictionary<string, (double MinHz, double MaxHz)> _profiles =
+            new(StringComparer.OrdinalIgnoreCase)
             {
-                TxtProfileName.Text = selected.Model;
-            }
-        }
+                { "Harris AN/PRC-152", (30e6, 512e6) },
+                { "Harris AN/PRC-153", (136e6, 520e6) },
+                { "AN/PRC-117F",       (30e6, 512e6) },
+                { "AN/PRC-117G",       (30e6, 2e9)   },
+                { "AN/PRC-119",        (30e6, 87.975e6) },
+                { "AN/PRC-148",        (30e6, 512e6) },
+                { "PRC-25",            (33e6, 75.95e6) },
+                { "9101A",             (33e6, 88e6) }
+            };
+
+        public event Action<string>? Applied;
 
         public RadioProfileView()
         {
             InitializeComponent();
 
-            if (!Directory.Exists(ProfileFolder))
-                Directory.CreateDirectory(ProfileFolder);
+            // Populate profiles
+            var names = _profiles.Keys.ToList();
+            names.Sort(StringComparer.OrdinalIgnoreCase);
+            ComboProfile.ItemsSource = names;
 
-            LoadProfiles();
+            // Default: Harris AN/PRC-152
+            var defaultIndex = names.IndexOf("Harris AN/PRC-152");
+            ComboProfile.SelectedIndex = defaultIndex >= 0 ? defaultIndex : 0;
 
-            ComboProfile.SelectionChanged += ComboProfile_SelectionChanged;
-
-            BtnImport.Click += (_, _) =>
+            // Wire events
+            ComboProfile.SelectionChanged += (_, __) => UpdateMinMax();
+            BtnApply.Click += (_, __) =>
             {
-                var dlg = new Microsoft.Win32.OpenFileDialog
-                {
-                    Title = "Import Radio Profile",
-                    Filter = "JSON Files (*.json)|*.json"
-                };
-
-                if (dlg.ShowDialog() == true)
-                {
-                    try
-                    {
-                        var json = File.ReadAllText(dlg.FileName);
-                        var profile = JsonSerializer.Deserialize<RadioProfile>(json);
-
-                        if (profile != null)
-                        {
-                            ComboProfile.Items.Add(profile);
-                            ComboProfile.SelectedItem = profile;
-                            SaveProfiles();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Import failed:\n{ex.Message}");
-                    }
-                }
+                Applied?.Invoke($"Radio profile set to {ComboProfile.SelectedItem}  [{TxtMinFreq.Text} – {TxtMaxFreq.Text}]");
             };
 
-            BtnExport.Click += (_, _) =>
-            {
-                if (ComboProfile.SelectedItem is RadioProfile selected)
-                {
-                    var dlg = new Microsoft.Win32.SaveFileDialog
-                    {
-                        Title = "Export Radio Profile",
-                        Filter = "JSON Files (*.json)|*.json",
-                        FileName = $"{selected.Model}.json",
-                        InitialDirectory = ProfileFolder
-                    };
-
-                    if (dlg.ShowDialog() == true)
-                    {
-                        try
-                        {
-                            var json = JsonSerializer.Serialize(selected, new JsonSerializerOptions { WriteIndented = true });
-                            File.WriteAllText(dlg.FileName, json);
-                            MessageBox.Show("Profile exported.");
-                            SaveProfiles();
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show($"Export failed:\n{ex.Message}");
-                        }
-                    }
-                }
-            };
-
-            BtnDelete.Click += (_, _) =>
-            {
-                if (ComboProfile.SelectedItem is RadioProfile selected)
-                {
-                    if (MessageBox.Show($"Delete profile '{selected.Display}'?", "Confirm", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                    {
-                        ComboProfile.Items.Remove(selected);
-                        TxtProfileName.Clear();
-                        SaveProfiles();
-                    }
-                }
-            };
+            // Initial fill
+            UpdateMinMax();
         }
 
-        private void LoadProfiles()
+        private void UpdateMinMax()
         {
-            List<RadioProfile> profiles;
+            if (ComboProfile.SelectedItem is not string key) return;
+            if (!_profiles.TryGetValue(key, out var range)) return;
 
-            if (File.Exists(ProfileListPath))
-            {
-                try
-                {
-                    var json = File.ReadAllText(ProfileListPath);
-                    profiles = JsonSerializer.Deserialize<List<RadioProfile>>(json) ?? new List<RadioProfile>();
-                }
-                catch
-                {
-                    MessageBox.Show("Failed to load saved profiles. Loading defaults.");
-                    profiles = GetDefaultProfiles();
-                }
-            }
-            else
-            {
-                profiles = GetDefaultProfiles();
-            }
-
-            ComboProfile.ItemsSource = profiles;
+            TxtMinFreq.Text = FormatFrequency(range.MinHz);
+            TxtMaxFreq.Text = FormatFrequency(range.MaxHz);
         }
 
-        private List<RadioProfile> GetDefaultProfiles()
+        private static string FormatFrequency(double hz)
         {
-            return new List<RadioProfile>
-            {
-                new RadioProfile { Brand = "Harris", Model = "AN/PRC-152" },
-                new RadioProfile { Brand = "Motorola", Model = "AN/PRC-153" },
-                new RadioProfile { Brand = "Harris", Model = "AN/PRC-117F" },
-                new RadioProfile { Brand = "Harris", Model = "AN/PRC-117G" },
-                new RadioProfile { Brand = "Harris", Model = "AN/PRC-119" },
-                new RadioProfile { Brand = "Harris", Model = "AN/PRC-148" },
-                new RadioProfile { Brand = "Harris", Model = "AN/PRC-25" },
-                new RadioProfile { Brand = "Tadiran", Model = "CNR-9101A" },
-            };
-        }
-
-        private void SaveProfiles()
-        {
-            var profiles = new List<RadioProfile>();
-
-            foreach (var item in ComboProfile.Items)
-            {
-                if (item is RadioProfile profile)
-                    profiles.Add(profile);
-            }
-
-            var json = JsonSerializer.Serialize(profiles, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(ProfileListPath, json);
+            if (hz >= 1_000_000_000) return $"{hz / 1_000_000_000:0.###} GHz";
+            if (hz >= 1_000_000) return $"{hz / 1_000_000:0.000} MHz";
+            if (hz >= 1_000) return $"{hz / 1_000:0.###} kHz";
+            return $"{hz:0} Hz";
         }
     }
 }

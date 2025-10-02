@@ -1,0 +1,1080 @@
+Folder PATH listing for volume Local Disk
+Volume serial number is 36D5-59B4
+C:.
+¦   .gitignore
+¦   NetVox.sln
+¦   structure.txt
+¦   
++---.github
+¦   +---workflows
++---NetVox.Api
+¦   ¦   appsettings.Development.json
+¦   ¦   appsettings.json
+¦   ¦   NetVox.Api.csproj
+¦   ¦   NetVox.Api.csproj.user
+¦   ¦   NetVox.Api.http
+¦   ¦   Program.cs
+¦   ¦   WeatherForecast.cs
+¦   ¦   
+¦   +---bin
+¦   ¦   +---Debug
+¦   ¦       +---net8.0
+¦   ¦       +---net8.0-windows7.0
+¦   ¦               appsettings.Development.json
+¦   ¦               appsettings.json
+¦   ¦               Microsoft.OpenApi.dll
+¦   ¦               NAudio.Asio.dll
+¦   ¦               NAudio.Core.dll
+¦   ¦               NAudio.dll
+¦   ¦               NAudio.Midi.dll
+¦   ¦               NAudio.Wasapi.dll
+¦   ¦               NAudio.WinForms.dll
+¦   ¦               NAudio.WinMM.dll
+¦   ¦               NetVox.Api.deps.json
+¦   ¦               NetVox.Api.dll
+¦   ¦               NetVox.Api.exe
+¦   ¦               NetVox.Api.pdb
+¦   ¦               NetVox.Api.runtimeconfig.json
+¦   ¦               NetVox.Api.staticwebassets.endpoints.json
+¦   ¦               NetVox.Core.deps.json
+¦   ¦               NetVox.Core.dll
+¦   ¦               NetVox.Core.exe
+¦   ¦               NetVox.Core.pdb
+¦   ¦               NetVox.Core.runtimeconfig.json
+¦   ¦               NetVox.Persistence.deps.json
+¦   ¦               NetVox.Persistence.dll
+¦   ¦               NetVox.Persistence.exe
+¦   ¦               NetVox.Persistence.pdb
+¦   ¦               NetVox.Persistence.runtimeconfig.json
+¦   ¦               Swashbuckle.AspNetCore.Swagger.dll
+¦   ¦               Swashbuckle.AspNetCore.SwaggerGen.dll
+¦   ¦               Swashbuckle.AspNetCore.SwaggerUI.dll
+¦   ¦               
+¦   +---Controllers
+¦   ¦       NetVoxController.cs
+¦   ¦       WeatherForecastController.cs
+¦   ¦       
+¦   +---obj
+¦   ¦   ¦   NetVox.Api.csproj.nuget.dgspec.json
+¦   ¦   ¦   NetVox.Api.csproj.nuget.g.props
+¦   ¦   ¦   NetVox.Api.csproj.nuget.g.targets
+¦   ¦   ¦   project.assets.json
+¦   ¦   ¦   project.nuget.cache
+¦   ¦   ¦   
+¦   ¦   +---Debug
+¦   ¦       +---net8.0
+¦   ¦       ¦   ¦   .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+¦   ¦       ¦   ¦   NetVox.Api.AssemblyInfo.cs
+¦   ¦       ¦   ¦   NetVox.Api.AssemblyInfoInputs.cache
+¦   ¦       ¦   ¦   NetVox.Api.assets.cache
+¦   ¦       ¦   ¦   NetVox.Api.csproj.AssemblyReference.cache
+¦   ¦       ¦   ¦   NetVox.Api.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦       ¦   ¦   NetVox.Api.GlobalUsings.g.cs
+¦   ¦       ¦   ¦   rpswa.dswa.cache.json
+¦   ¦       ¦   ¦   staticwebassets.removed.txt
+¦   ¦       ¦   ¦   
+¦   ¦       ¦   +---ref
+¦   ¦       ¦   +---refint
+¦   ¦       ¦   +---staticwebassets
+¦   ¦       +---net8.0-windows7.0
+¦   ¦           ¦   .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+¦   ¦           ¦   ApiEndpoints.json
+¦   ¦           ¦   apphost.exe
+¦   ¦           ¦   NetVox.Api.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Api.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Api.assets.cache
+¦   ¦           ¦   NetVox.Api.csproj.AssemblyReference.cache
+¦   ¦           ¦   NetVox.Api.csproj.BuildWithSkipAnalyzers
+¦   ¦           ¦   NetVox.Api.csproj.CoreCompileInputs.cache
+¦   ¦           ¦   NetVox.Api.csproj.FileListAbsolute.txt
+¦   ¦           ¦   NetVox.Api.csproj.Up2Date
+¦   ¦           ¦   NetVox.Api.dll
+¦   ¦           ¦   NetVox.Api.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Api.genruntimeconfig.cache
+¦   ¦           ¦   NetVox.Api.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Api.MvcApplicationPartsAssemblyInfo.cache
+¦   ¦           ¦   NetVox.Api.MvcApplicationPartsAssemblyInfo.cs
+¦   ¦           ¦   NetVox.Api.pdb
+¦   ¦           ¦   NetVox.Api.sourcelink.json
+¦   ¦           ¦   rjsmcshtml.dswa.cache.json
+¦   ¦           ¦   rjsmrazor.dswa.cache.json
+¦   ¦           ¦   rpswa.dswa.cache.json
+¦   ¦           ¦   staticwebassets.build.endpoints.json
+¦   ¦           ¦   staticwebassets.build.json
+¦   ¦           ¦   staticwebassets.build.json.cache
+¦   ¦           ¦   staticwebassets.references.upToDateCheck.txt
+¦   ¦           ¦   staticwebassets.removed.txt
+¦   ¦           ¦   
+¦   ¦           +---EndpointInfo
+¦   ¦           ¦       NetVox.Api.json
+¦   ¦           ¦       NetVox.Api.OpenApiFiles.cache
+¦   ¦           ¦       
+¦   ¦           +---ref
+¦   ¦           ¦       NetVox.Api.dll
+¦   ¦           ¦       
+¦   ¦           +---refint
+¦   ¦           ¦       NetVox.Api.dll
+¦   ¦           ¦       
+¦   ¦           +---staticwebassets
+¦   +---Properties
+¦           launchSettings.json
+¦           
++---NetVox.Core
+¦   ¦   App.xaml
+¦   ¦   App.xaml.cs
+¦   ¦   AssemblyInfo.cs
+¦   ¦   MainWindow.xaml
+¦   ¦   MainWindow.xaml.cs
+¦   ¦   NetVox.Core.csproj
+¦   ¦   
+¦   +---bin
+¦   ¦   +---Debug
+¦   ¦       +---net8.0-windows
+¦   ¦               NAudio.Asio.dll
+¦   ¦               NAudio.Core.dll
+¦   ¦               NAudio.dll
+¦   ¦               NAudio.Midi.dll
+¦   ¦               NAudio.Wasapi.dll
+¦   ¦               NAudio.WinForms.dll
+¦   ¦               NAudio.WinMM.dll
+¦   ¦               NetVox.Core.deps.json
+¦   ¦               NetVox.Core.dll
+¦   ¦               NetVox.Core.exe
+¦   ¦               NetVox.Core.pdb
+¦   ¦               NetVox.Core.runtimeconfig.json
+¦   ¦               
+¦   +---Input
+¦   ¦       GlobalKeyboardListener.cs
+¦   ¦       
+¦   +---Interfaces
+¦   ¦       IConfigRepository.cs
+¦   ¦       INetworkService.cs
+¦   ¦       IPduService.cs
+¦   ¦       IRadioService.cs
+¦   ¦       
+¦   +---Models
+¦   ¦       ChannelConfig.cs
+¦   ¦       KeybindConfig.cs
+¦   ¦       NetworkConfig.cs
+¦   ¦       PduSettings.cs
+¦   ¦       Profile.cs
+¦   ¦       
+¦   +---obj
+¦   ¦   ¦   NetVox.Core.csproj.nuget.dgspec.json
+¦   ¦   ¦   NetVox.Core.csproj.nuget.g.props
+¦   ¦   ¦   NetVox.Core.csproj.nuget.g.targets
+¦   ¦   ¦   NetVox.Core_1o3gw303_wpftmp.csproj.nuget.dgspec.json
+¦   ¦   ¦   NetVox.Core_1o3gw303_wpftmp.csproj.nuget.g.props
+¦   ¦   ¦   NetVox.Core_1o3gw303_wpftmp.csproj.nuget.g.targets
+¦   ¦   ¦   NetVox.Core_els4qkaw_wpftmp.csproj.nuget.dgspec.json
+¦   ¦   ¦   NetVox.Core_els4qkaw_wpftmp.csproj.nuget.g.props
+¦   ¦   ¦   NetVox.Core_els4qkaw_wpftmp.csproj.nuget.g.targets
+¦   ¦   ¦   NetVox.Core_gi4rhkio_wpftmp.csproj.nuget.dgspec.json
+¦   ¦   ¦   NetVox.Core_gi4rhkio_wpftmp.csproj.nuget.g.props
+¦   ¦   ¦   NetVox.Core_gi4rhkio_wpftmp.csproj.nuget.g.targets
+¦   ¦   ¦   NetVox.Core_jlreazbf_wpftmp.csproj.nuget.dgspec.json
+¦   ¦   ¦   NetVox.Core_jlreazbf_wpftmp.csproj.nuget.g.props
+¦   ¦   ¦   NetVox.Core_jlreazbf_wpftmp.csproj.nuget.g.targets
+¦   ¦   ¦   NetVox.Core_lajqhzx5_wpftmp.csproj.nuget.dgspec.json
+¦   ¦   ¦   NetVox.Core_lajqhzx5_wpftmp.csproj.nuget.g.props
+¦   ¦   ¦   NetVox.Core_lajqhzx5_wpftmp.csproj.nuget.g.targets
+¦   ¦   ¦   NetVox.Core_mygch4gz_wpftmp.csproj.nuget.dgspec.json
+¦   ¦   ¦   NetVox.Core_mygch4gz_wpftmp.csproj.nuget.g.props
+¦   ¦   ¦   NetVox.Core_mygch4gz_wpftmp.csproj.nuget.g.targets
+¦   ¦   ¦   NetVox.Core_n3dcucq2_wpftmp.csproj.nuget.dgspec.json
+¦   ¦   ¦   NetVox.Core_n3dcucq2_wpftmp.csproj.nuget.g.props
+¦   ¦   ¦   NetVox.Core_n3dcucq2_wpftmp.csproj.nuget.g.targets
+¦   ¦   ¦   NetVox.Core_o2wssalu_wpftmp.csproj.nuget.dgspec.json
+¦   ¦   ¦   NetVox.Core_o2wssalu_wpftmp.csproj.nuget.g.props
+¦   ¦   ¦   NetVox.Core_o2wssalu_wpftmp.csproj.nuget.g.targets
+¦   ¦   ¦   NetVox.Core_tlnug5mk_wpftmp.csproj.nuget.dgspec.json
+¦   ¦   ¦   NetVox.Core_tlnug5mk_wpftmp.csproj.nuget.g.props
+¦   ¦   ¦   NetVox.Core_tlnug5mk_wpftmp.csproj.nuget.g.targets
+¦   ¦   ¦   NetVox.Core_u3ggxdtu_wpftmp.csproj.nuget.dgspec.json
+¦   ¦   ¦   NetVox.Core_u3ggxdtu_wpftmp.csproj.nuget.g.props
+¦   ¦   ¦   NetVox.Core_u3ggxdtu_wpftmp.csproj.nuget.g.targets
+¦   ¦   ¦   NetVox.Core_wwhi0mqp_wpftmp.csproj.nuget.dgspec.json
+¦   ¦   ¦   NetVox.Core_wwhi0mqp_wpftmp.csproj.nuget.g.props
+¦   ¦   ¦   NetVox.Core_wwhi0mqp_wpftmp.csproj.nuget.g.targets
+¦   ¦   ¦   NetVox.Core_zrvf3krx_wpftmp.csproj.nuget.dgspec.json
+¦   ¦   ¦   NetVox.Core_zrvf3krx_wpftmp.csproj.nuget.g.props
+¦   ¦   ¦   NetVox.Core_zrvf3krx_wpftmp.csproj.nuget.g.targets
+¦   ¦   ¦   project.assets.json
+¦   ¦   ¦   project.nuget.cache
+¦   ¦   ¦   
+¦   ¦   +---Debug
+¦   ¦       +---net8.0-windows
+¦   ¦           ¦   .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+¦   ¦           ¦   App.g.cs
+¦   ¦           ¦   App.g.i.cs
+¦   ¦           ¦   apphost.exe
+¦   ¦           ¦   MainWindow.baml
+¦   ¦           ¦   MainWindow.g.cs
+¦   ¦           ¦   MainWindow.g.i.cs
+¦   ¦           ¦   NetVox.C.0FF21142.Up2Date
+¦   ¦           ¦   NetVox.Core.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core.assets.cache
+¦   ¦           ¦   NetVox.Core.csproj.AssemblyReference.cache
+¦   ¦           ¦   NetVox.Core.csproj.BuildWithSkipAnalyzers
+¦   ¦           ¦   NetVox.Core.csproj.CoreCompileInputs.cache
+¦   ¦           ¦   NetVox.Core.csproj.FileListAbsolute.txt
+¦   ¦           ¦   NetVox.Core.dll
+¦   ¦           ¦   NetVox.Core.g.resources
+¦   ¦           ¦   NetVox.Core.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core.genruntimeconfig.cache
+¦   ¦           ¦   NetVox.Core.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core.pdb
+¦   ¦           ¦   NetVox.Core.sourcelink.json
+¦   ¦           ¦   NetVox.Core_1o3gw303_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_1o3gw303_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_1o3gw303_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_1o3gw303_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_1o3gw303_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_1o3gw303_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_els4qkaw_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_els4qkaw_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_els4qkaw_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_els4qkaw_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_els4qkaw_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_els4qkaw_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_gi4rhkio_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_gi4rhkio_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_gi4rhkio_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_gi4rhkio_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_gi4rhkio_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_gi4rhkio_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_hnbzkgyu_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_hnbzkgyu_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_hnbzkgyu_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_hnbzkgyu_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_hnbzkgyu_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_hnbzkgyu_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_jlreazbf_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_jlreazbf_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_jlreazbf_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_jlreazbf_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_jlreazbf_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_jlreazbf_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_k0deiom3_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_k0deiom3_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_k0deiom3_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_k0deiom3_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_k0deiom3_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_k0deiom3_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_l4y3hohk_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_l4y3hohk_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_l4y3hohk_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_l4y3hohk_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_l4y3hohk_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_l4y3hohk_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_lajqhzx5_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_lajqhzx5_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_lajqhzx5_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_lajqhzx5_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_lajqhzx5_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_lajqhzx5_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_MarkupCompile.cache
+¦   ¦           ¦   NetVox.Core_MarkupCompile.i.cache
+¦   ¦           ¦   NetVox.Core_MarkupCompile.lref
+¦   ¦           ¦   NetVox.Core_mygch4gz_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_mygch4gz_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_mygch4gz_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_mygch4gz_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_mygch4gz_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_mygch4gz_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_n3dcucq2_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_n3dcucq2_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_n3dcucq2_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_n3dcucq2_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_n3dcucq2_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_n3dcucq2_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_ng3x3y3n_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_ng3x3y3n_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_ng3x3y3n_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_ng3x3y3n_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_ng3x3y3n_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_ng3x3y3n_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_ngkpl2ik_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_ngkpl2ik_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_ngkpl2ik_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_ngkpl2ik_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_ngkpl2ik_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_ngkpl2ik_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_nkawu0vp_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_nkawu0vp_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_nkawu0vp_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_nkawu0vp_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_nkawu0vp_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_nkawu0vp_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_o2wssalu_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_o2wssalu_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_o2wssalu_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_o2wssalu_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_o2wssalu_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_o2wssalu_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_shyeajlw_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_shyeajlw_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_shyeajlw_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_shyeajlw_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_shyeajlw_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_shyeajlw_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_tlnug5mk_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_tlnug5mk_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_tlnug5mk_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_tlnug5mk_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_tlnug5mk_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_tlnug5mk_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_u3ggxdtu_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_u3ggxdtu_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_u3ggxdtu_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_u3ggxdtu_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_u3ggxdtu_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_u3ggxdtu_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_wwhi0mqp_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_wwhi0mqp_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_wwhi0mqp_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_wwhi0mqp_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_wwhi0mqp_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_wwhi0mqp_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_zbtdvkrd_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_zbtdvkrd_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_zbtdvkrd_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_zbtdvkrd_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_zbtdvkrd_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_zbtdvkrd_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_zijbsuc0_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_zijbsuc0_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_zijbsuc0_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_zijbsuc0_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_zijbsuc0_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_zijbsuc0_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Core_zrvf3krx_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Core_zrvf3krx_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Core_zrvf3krx_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Core_zrvf3krx_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Core_zrvf3krx_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Core_zrvf3krx_wpftmp.sourcelink.json
+¦   ¦           ¦   
+¦   ¦           +---ref
+¦   ¦           ¦       NetVox.Core.dll
+¦   ¦           ¦       
+¦   ¦           +---refint
+¦   ¦                   NetVox.Core.dll
+¦   ¦                   
+¦   +---Services
+¦   ¦       AudioCaptureService.cs
+¦   ¦       DisModulationBuilder.cs
+¦   ¦       NetworkService.cs
+¦   ¦       PduBuilder.cs
+¦   ¦       PduService.cs
+¦   ¦       RadioService.cs
+¦   ¦       StubRadioService.cs
+¦   ¦       
+¦   +---Utils
+¦           CnrSimImporter.cs
+¦           ModulationBuilder.cs
+¦           
++---NetVox.Persistence
+¦   ¦   App.xaml
+¦   ¦   App.xaml.cs
+¦   ¦   AssemblyInfo.cs
+¦   ¦   MainWindow.xaml
+¦   ¦   MainWindow.xaml.cs
+¦   ¦   NetVox.Persistence.csproj
+¦   ¦   
+¦   +---bin
+¦   ¦   +---Debug
+¦   ¦       +---net8.0-windows
+¦   ¦               NAudio.Asio.dll
+¦   ¦               NAudio.Core.dll
+¦   ¦               NAudio.dll
+¦   ¦               NAudio.Midi.dll
+¦   ¦               NAudio.Wasapi.dll
+¦   ¦               NAudio.WinForms.dll
+¦   ¦               NAudio.WinMM.dll
+¦   ¦               NetVox.Core.deps.json
+¦   ¦               NetVox.Core.dll
+¦   ¦               NetVox.Core.exe
+¦   ¦               NetVox.Core.pdb
+¦   ¦               NetVox.Core.runtimeconfig.json
+¦   ¦               NetVox.Persistence.deps.json
+¦   ¦               NetVox.Persistence.dll
+¦   ¦               NetVox.Persistence.exe
+¦   ¦               NetVox.Persistence.pdb
+¦   ¦               NetVox.Persistence.runtimeconfig.json
+¦   ¦               
+¦   +---obj
+¦   ¦   ¦   NetVox.Persistence.csproj.nuget.dgspec.json
+¦   ¦   ¦   NetVox.Persistence.csproj.nuget.g.props
+¦   ¦   ¦   NetVox.Persistence.csproj.nuget.g.targets
+¦   ¦   ¦   project.assets.json
+¦   ¦   ¦   project.nuget.cache
+¦   ¦   ¦   
+¦   ¦   +---Debug
+¦   ¦       +---net8.0-windows
+¦   ¦           ¦   .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+¦   ¦           ¦   App.g.cs
+¦   ¦           ¦   App.g.i.cs
+¦   ¦           ¦   apphost.exe
+¦   ¦           ¦   MainWindow.baml
+¦   ¦           ¦   MainWindow.g.cs
+¦   ¦           ¦   MainWindow.g.i.cs
+¦   ¦           ¦   NetVox.P.502DFCDD.Up2Date
+¦   ¦           ¦   NetVox.Persistence.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Persistence.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Persistence.assets.cache
+¦   ¦           ¦   NetVox.Persistence.csproj.AssemblyReference.cache
+¦   ¦           ¦   NetVox.Persistence.csproj.BuildWithSkipAnalyzers
+¦   ¦           ¦   NetVox.Persistence.csproj.CoreCompileInputs.cache
+¦   ¦           ¦   NetVox.Persistence.csproj.FileListAbsolute.txt
+¦   ¦           ¦   NetVox.Persistence.dll
+¦   ¦           ¦   NetVox.Persistence.g.resources
+¦   ¦           ¦   NetVox.Persistence.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Persistence.genruntimeconfig.cache
+¦   ¦           ¦   NetVox.Persistence.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Persistence.pdb
+¦   ¦           ¦   NetVox.Persistence.sourcelink.json
+¦   ¦           ¦   NetVox.Persistence_1h5wwt55_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Persistence_1h5wwt55_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Persistence_1h5wwt55_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Persistence_1h5wwt55_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Persistence_1h5wwt55_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Persistence_1h5wwt55_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Persistence_2mwjpj0q_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Persistence_2mwjpj0q_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Persistence_2mwjpj0q_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Persistence_2mwjpj0q_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Persistence_2mwjpj0q_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Persistence_2mwjpj0q_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Persistence_dgl4jalt_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Persistence_dgl4jalt_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Persistence_dgl4jalt_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Persistence_dgl4jalt_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Persistence_dgl4jalt_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Persistence_dgl4jalt_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Persistence_jikrgiyw_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Persistence_jikrgiyw_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Persistence_jikrgiyw_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Persistence_jikrgiyw_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Persistence_jikrgiyw_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Persistence_jikrgiyw_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Persistence_MarkupCompile.cache
+¦   ¦           ¦   NetVox.Persistence_MarkupCompile.i.cache
+¦   ¦           ¦   NetVox.Persistence_MarkupCompile.lref
+¦   ¦           ¦   NetVox.Persistence_mwvdeyia_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Persistence_mwvdeyia_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Persistence_mwvdeyia_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Persistence_mwvdeyia_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Persistence_mwvdeyia_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Persistence_mwvdeyia_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Persistence_ng31vvyh_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Persistence_ng31vvyh_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Persistence_ng31vvyh_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Persistence_ng31vvyh_wpftmp.csproj.BuildWithSkipAnalyzers
+¦   ¦           ¦   NetVox.Persistence_ng31vvyh_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Persistence_ng31vvyh_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Persistence_ng31vvyh_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Persistence_pvospmwq_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Persistence_pvospmwq_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Persistence_pvospmwq_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Persistence_pvospmwq_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Persistence_pvospmwq_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Persistence_pvospmwq_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Persistence_yi1bldnr_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Persistence_yi1bldnr_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Persistence_yi1bldnr_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Persistence_yi1bldnr_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Persistence_yi1bldnr_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Persistence_yi1bldnr_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Persistence_z1o4lj0s_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Persistence_z1o4lj0s_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Persistence_z1o4lj0s_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Persistence_z1o4lj0s_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Persistence_z1o4lj0s_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Persistence_z1o4lj0s_wpftmp.sourcelink.json
+¦   ¦           ¦   NetVox.Persistence_zogj4qel_wpftmp.AssemblyInfo.cs
+¦   ¦           ¦   NetVox.Persistence_zogj4qel_wpftmp.AssemblyInfoInputs.cache
+¦   ¦           ¦   NetVox.Persistence_zogj4qel_wpftmp.assets.cache
+¦   ¦           ¦   NetVox.Persistence_zogj4qel_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦           ¦   NetVox.Persistence_zogj4qel_wpftmp.GlobalUsings.g.cs
+¦   ¦           ¦   NetVox.Persistence_zogj4qel_wpftmp.sourcelink.json
+¦   ¦           ¦   
+¦   ¦           +---ref
+¦   ¦           ¦       NetVox.Persistence.dll
+¦   ¦           ¦       
+¦   ¦           +---refint
+¦   ¦                   NetVox.Persistence.dll
+¦   ¦                   
+¦   +---Repositories
+¦           JsonConfigRepository.cs
+¦           
++---NetVox.UI
+    +---NetVox.UI
+        ¦   App.xaml
+        ¦   App.xaml.cs
+        ¦   AssemblyInfo.cs
+        ¦   MainWindow.xaml
+        ¦   MainWindow.xaml.cs
+        ¦   NetVox.UI.csproj
+        ¦   NetVox.UI.csproj.user
+        ¦   NetworkSettingsWindow.xaml
+        ¦   NetworkSettingsWindow.xaml.cs
+        ¦   PduSettingsWindow.xaml
+        ¦   PduSettingsWindow.xaml.cs
+        ¦   RadioProfileView.xaml
+        ¦   RadioProfileView.xaml.cs
+        ¦   
+        +---bin
+        ¦   +---Debug
+        ¦       +---net8.0-windows
+        ¦               NAudio.Asio.dll
+        ¦               NAudio.Core.dll
+        ¦               NAudio.dll
+        ¦               NAudio.Midi.dll
+        ¦               NAudio.Wasapi.dll
+        ¦               NAudio.WinForms.dll
+        ¦               NAudio.WinMM.dll
+        ¦               NetVox.Core.deps.json
+        ¦               NetVox.Core.dll
+        ¦               NetVox.Core.exe
+        ¦               NetVox.Core.pdb
+        ¦               NetVox.Core.runtimeconfig.json
+        ¦               NetVox.Persistence.deps.json
+        ¦               NetVox.Persistence.dll
+        ¦               NetVox.Persistence.exe
+        ¦               NetVox.Persistence.pdb
+        ¦               NetVox.Persistence.runtimeconfig.json
+        ¦               NetVox.UI.deps.json
+        ¦               NetVox.UI.dll
+        ¦               NetVox.UI.exe
+        ¦               NetVox.UI.pdb
+        ¦               NetVox.UI.runtimeconfig.json
+        ¦               
+        +---obj
+        ¦   ¦   NetVox.UI.csproj.nuget.dgspec.json
+        ¦   ¦   NetVox.UI.csproj.nuget.g.props
+        ¦   ¦   NetVox.UI.csproj.nuget.g.targets
+        ¦   ¦   NetVox.UI_14bo1yng_wpftmp.csproj.nuget.dgspec.json
+        ¦   ¦   NetVox.UI_14bo1yng_wpftmp.csproj.nuget.g.props
+        ¦   ¦   NetVox.UI_14bo1yng_wpftmp.csproj.nuget.g.targets
+        ¦   ¦   NetVox.UI_23fsfpng_wpftmp.csproj.nuget.dgspec.json
+        ¦   ¦   NetVox.UI_23fsfpng_wpftmp.csproj.nuget.g.props
+        ¦   ¦   NetVox.UI_23fsfpng_wpftmp.csproj.nuget.g.targets
+        ¦   ¦   NetVox.UI_elk5jrkh_wpftmp.csproj.nuget.dgspec.json
+        ¦   ¦   NetVox.UI_elk5jrkh_wpftmp.csproj.nuget.g.props
+        ¦   ¦   NetVox.UI_elk5jrkh_wpftmp.csproj.nuget.g.targets
+        ¦   ¦   NetVox.UI_ig1rwgip_wpftmp.csproj.nuget.dgspec.json
+        ¦   ¦   NetVox.UI_ig1rwgip_wpftmp.csproj.nuget.g.props
+        ¦   ¦   NetVox.UI_ig1rwgip_wpftmp.csproj.nuget.g.targets
+        ¦   ¦   NetVox.UI_jcxb5swd_wpftmp.csproj.nuget.dgspec.json
+        ¦   ¦   NetVox.UI_jcxb5swd_wpftmp.csproj.nuget.g.props
+        ¦   ¦   NetVox.UI_jcxb5swd_wpftmp.csproj.nuget.g.targets
+        ¦   ¦   NetVox.UI_l352q5qr_wpftmp.csproj.nuget.dgspec.json
+        ¦   ¦   NetVox.UI_l352q5qr_wpftmp.csproj.nuget.g.props
+        ¦   ¦   NetVox.UI_l352q5qr_wpftmp.csproj.nuget.g.targets
+        ¦   ¦   NetVox.UI_l3z4x12l_wpftmp.csproj.nuget.dgspec.json
+        ¦   ¦   NetVox.UI_l3z4x12l_wpftmp.csproj.nuget.g.props
+        ¦   ¦   NetVox.UI_l3z4x12l_wpftmp.csproj.nuget.g.targets
+        ¦   ¦   NetVox.UI_lk4hrwuc_wpftmp.csproj.nuget.dgspec.json
+        ¦   ¦   NetVox.UI_lk4hrwuc_wpftmp.csproj.nuget.g.props
+        ¦   ¦   NetVox.UI_lk4hrwuc_wpftmp.csproj.nuget.g.targets
+        ¦   ¦   NetVox.UI_m5qkxy5v_wpftmp.csproj.nuget.dgspec.json
+        ¦   ¦   NetVox.UI_m5qkxy5v_wpftmp.csproj.nuget.g.props
+        ¦   ¦   NetVox.UI_m5qkxy5v_wpftmp.csproj.nuget.g.targets
+        ¦   ¦   NetVox.UI_u1kp5zsq_wpftmp.csproj.nuget.dgspec.json
+        ¦   ¦   NetVox.UI_u1kp5zsq_wpftmp.csproj.nuget.g.props
+        ¦   ¦   NetVox.UI_u1kp5zsq_wpftmp.csproj.nuget.g.targets
+        ¦   ¦   NetVox.UI_utx4pvcf_wpftmp.csproj.nuget.dgspec.json
+        ¦   ¦   NetVox.UI_utx4pvcf_wpftmp.csproj.nuget.g.props
+        ¦   ¦   NetVox.UI_utx4pvcf_wpftmp.csproj.nuget.g.targets
+        ¦   ¦   NetVox.UI_vblt0qdl_wpftmp.csproj.nuget.dgspec.json
+        ¦   ¦   NetVox.UI_vblt0qdl_wpftmp.csproj.nuget.g.props
+        ¦   ¦   NetVox.UI_vblt0qdl_wpftmp.csproj.nuget.g.targets
+        ¦   ¦   NetVox.UI_z5wnyxfz_wpftmp.csproj.nuget.dgspec.json
+        ¦   ¦   NetVox.UI_z5wnyxfz_wpftmp.csproj.nuget.g.props
+        ¦   ¦   NetVox.UI_z5wnyxfz_wpftmp.csproj.nuget.g.targets
+        ¦   ¦   project.assets.json
+        ¦   ¦   project.nuget.cache
+        ¦   ¦   
+        ¦   +---Debug
+        ¦       +---net8.0-windows
+        ¦           ¦   .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+        ¦           ¦   App.g.cs
+        ¦           ¦   App.g.i.cs
+        ¦           ¦   apphost.exe
+        ¦           ¦   GeneratedInternalTypeHelper.g.cs
+        ¦           ¦   GeneratedInternalTypeHelper.g.i.cs
+        ¦           ¦   MainWindow.baml
+        ¦           ¦   MainWindow.g.cs
+        ¦           ¦   MainWindow.g.i.cs
+        ¦           ¦   NetVox.UI.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI.assets.cache
+        ¦           ¦   NetVox.UI.csproj.AssemblyReference.cache
+        ¦           ¦   NetVox.UI.csproj.BuildWithSkipAnalyzers
+        ¦           ¦   NetVox.UI.csproj.CoreCompileInputs.cache
+        ¦           ¦   NetVox.UI.csproj.FileListAbsolute.txt
+        ¦           ¦   NetVox.UI.csproj.Up2Date
+        ¦           ¦   NetVox.UI.designer.deps.json
+        ¦           ¦   NetVox.UI.designer.runtimeconfig.json
+        ¦           ¦   NetVox.UI.dll
+        ¦           ¦   NetVox.UI.g.resources
+        ¦           ¦   NetVox.UI.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI.genruntimeconfig.cache
+        ¦           ¦   NetVox.UI.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI.pdb
+        ¦           ¦   NetVox.UI.sourcelink.json
+        ¦           ¦   NetVox.UI_0h0esgib_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_0h0esgib_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_0h0esgib_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_0h0esgib_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_0h0esgib_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_0h0esgib_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_0j3rwlga_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_0j3rwlga_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_0j3rwlga_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_0j3rwlga_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_0j3rwlga_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_0j3rwlga_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_0t0xosh4_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_0t0xosh4_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_0t0xosh4_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_0t0xosh4_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_0t0xosh4_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_0t0xosh4_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_14bo1yng_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_14bo1yng_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_14bo1yng_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_14bo1yng_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_14bo1yng_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_14bo1yng_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_23fsfpng_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_23fsfpng_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_23fsfpng_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_23fsfpng_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_23fsfpng_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_23fsfpng_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_2jmzscgx_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_2jmzscgx_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_2jmzscgx_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_2jmzscgx_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_2jmzscgx_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_2jmzscgx_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_2oxpglng_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_2oxpglng_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_2oxpglng_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_2oxpglng_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_2oxpglng_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_2oxpglng_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_2vbrbtfy_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_2vbrbtfy_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_2vbrbtfy_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_2vbrbtfy_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_2vbrbtfy_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_2vbrbtfy_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_3lv4q5aw_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_3lv4q5aw_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_3lv4q5aw_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_3lv4q5aw_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_3lv4q5aw_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_3lv4q5aw_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_4avqkdgl_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_4avqkdgl_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_4avqkdgl_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_4avqkdgl_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_4avqkdgl_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_4avqkdgl_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_4sutkdqz_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_4sutkdqz_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_4sutkdqz_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_4sutkdqz_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_4sutkdqz_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_4sutkdqz_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_53s5kemx_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_53s5kemx_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_53s5kemx_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_53s5kemx_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_53s5kemx_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_53s5kemx_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_5ii2dhqt_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_5ii2dhqt_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_5ii2dhqt_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_5ii2dhqt_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_5ii2dhqt_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_5ii2dhqt_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_5nm2nyxu_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_5nm2nyxu_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_5nm2nyxu_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_5nm2nyxu_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_5nm2nyxu_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_5nm2nyxu_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_5yc2miiv_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_5yc2miiv_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_5yc2miiv_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_5yc2miiv_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_5yc2miiv_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_5yc2miiv_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_afil51uy_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_afil51uy_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_afil51uy_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_afil51uy_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_afil51uy_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_afil51uy_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_d3pvehqo_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_d3pvehqo_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_d3pvehqo_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_d3pvehqo_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_d3pvehqo_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_d3pvehqo_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_djme3zdf_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_djme3zdf_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_djme3zdf_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_djme3zdf_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_djme3zdf_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_djme3zdf_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_dl3hil0n_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_dl3hil0n_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_dl3hil0n_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_dl3hil0n_wpftmp.csproj.BuildWithSkipAnalyzers
+        ¦           ¦   NetVox.UI_dl3hil0n_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_dl3hil0n_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_dl3hil0n_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_dsh0z1am_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_dsh0z1am_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_dsh0z1am_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_dsh0z1am_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_dsh0z1am_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_dsh0z1am_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_du02li5h_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_du02li5h_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_du02li5h_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_du02li5h_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_du02li5h_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_du02li5h_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_e3coelfs_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_e3coelfs_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_e3coelfs_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_e3coelfs_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_e3coelfs_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_e3coelfs_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_elk5jrkh_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_elk5jrkh_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_elk5jrkh_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_elk5jrkh_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_elk5jrkh_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_elk5jrkh_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_fcip15gl_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_fcip15gl_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_fcip15gl_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_fcip15gl_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_fcip15gl_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_fcip15gl_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_fp32ifz5_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_fp32ifz5_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_fp32ifz5_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_fp32ifz5_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_fp32ifz5_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_fp32ifz5_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_hodprkfv_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_hodprkfv_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_hodprkfv_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_hodprkfv_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_hodprkfv_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_hodprkfv_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_hsyvycmx_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_hsyvycmx_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_hsyvycmx_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_hsyvycmx_wpftmp.csproj.BuildWithSkipAnalyzers
+        ¦           ¦   NetVox.UI_hsyvycmx_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_hsyvycmx_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_hsyvycmx_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_hvhca2st_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_hvhca2st_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_hvhca2st_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_hvhca2st_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_hvhca2st_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_hvhca2st_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_ig1rwgip_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_ig1rwgip_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_ig1rwgip_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_ig1rwgip_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_ig1rwgip_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_ig1rwgip_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_ivsflpwn_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_ivsflpwn_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_ivsflpwn_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_ivsflpwn_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_ivsflpwn_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_ivsflpwn_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_iymsk5d3_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_iymsk5d3_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_iymsk5d3_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_iymsk5d3_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_iymsk5d3_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_iymsk5d3_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_j5ask4ug_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_j5ask4ug_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_j5ask4ug_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_j5ask4ug_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_j5ask4ug_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_j5ask4ug_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_jcxb5swd_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_jcxb5swd_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_jcxb5swd_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_jcxb5swd_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_jcxb5swd_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_jcxb5swd_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_jqv3phuw_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_jqv3phuw_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_jqv3phuw_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_jqv3phuw_wpftmp.csproj.BuildWithSkipAnalyzers
+        ¦           ¦   NetVox.UI_jqv3phuw_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_jqv3phuw_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_jqv3phuw_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_jtvbw0tg_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_jtvbw0tg_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_jtvbw0tg_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_jtvbw0tg_wpftmp.csproj.BuildWithSkipAnalyzers
+        ¦           ¦   NetVox.UI_jtvbw0tg_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_jtvbw0tg_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_jtvbw0tg_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_jzt1y0r4_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_jzt1y0r4_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_jzt1y0r4_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_jzt1y0r4_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_jzt1y0r4_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_jzt1y0r4_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_kn1pwo0s_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_kn1pwo0s_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_kn1pwo0s_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_kn1pwo0s_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_kn1pwo0s_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_kn1pwo0s_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_l352q5qr_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_l352q5qr_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_l352q5qr_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_l352q5qr_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_l352q5qr_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_l352q5qr_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_l3z4x12l_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_l3z4x12l_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_l3z4x12l_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_l3z4x12l_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_l3z4x12l_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_l3z4x12l_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_lk4hrwuc_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_lk4hrwuc_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_lk4hrwuc_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_lk4hrwuc_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_lk4hrwuc_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_lk4hrwuc_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_m5qkxy5v_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_m5qkxy5v_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_m5qkxy5v_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_m5qkxy5v_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_m5qkxy5v_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_m5qkxy5v_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_MarkupCompile.cache
+        ¦           ¦   NetVox.UI_MarkupCompile.i.cache
+        ¦           ¦   NetVox.UI_MarkupCompile.lref
+        ¦           ¦   NetVox.UI_nd0c5g1m_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_nd0c5g1m_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_nd0c5g1m_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_nd0c5g1m_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_nd0c5g1m_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_nd0c5g1m_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_nhg25eos_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_nhg25eos_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_nhg25eos_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_nhg25eos_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_nhg25eos_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_nhg25eos_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_ni3hndv5_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_ni3hndv5_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_ni3hndv5_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_ni3hndv5_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_ni3hndv5_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_ni3hndv5_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_ovtmnimw_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_ovtmnimw_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_ovtmnimw_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_ovtmnimw_wpftmp.csproj.BuildWithSkipAnalyzers
+        ¦           ¦   NetVox.UI_ovtmnimw_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_ovtmnimw_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_ovtmnimw_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_p1fxd4gr_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_p1fxd4gr_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_p1fxd4gr_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_p1fxd4gr_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_p1fxd4gr_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_p1fxd4gr_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_p2gt1vt4_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_p2gt1vt4_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_p2gt1vt4_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_p2gt1vt4_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_p2gt1vt4_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_p2gt1vt4_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_pggld4is_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_pggld4is_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_pggld4is_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_pggld4is_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_pggld4is_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_pggld4is_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_r5zfda00_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_r5zfda00_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_r5zfda00_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_r5zfda00_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_r5zfda00_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_r5zfda00_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_sdwfblxj_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_sdwfblxj_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_sdwfblxj_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_sdwfblxj_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_sdwfblxj_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_sdwfblxj_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_sfvyblri_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_sfvyblri_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_sfvyblri_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_sfvyblri_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_sfvyblri_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_sfvyblri_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_sgbjepkd_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_sgbjepkd_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_sgbjepkd_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_sgbjepkd_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_sgbjepkd_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_sgbjepkd_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_sqhz2ao5_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_sqhz2ao5_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_sqhz2ao5_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_sqhz2ao5_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_sqhz2ao5_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_sqhz2ao5_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_sxzxfvhr_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_sxzxfvhr_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_sxzxfvhr_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_sxzxfvhr_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_sxzxfvhr_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_sxzxfvhr_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_u1kp5zsq_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_u1kp5zsq_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_u1kp5zsq_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_u1kp5zsq_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_u1kp5zsq_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_u1kp5zsq_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_ucxaybit_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_ucxaybit_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_ucxaybit_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_ucxaybit_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_ucxaybit_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_ucxaybit_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_ufpg0i01_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_ufpg0i01_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_ufpg0i01_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_ufpg0i01_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_ufpg0i01_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_ufpg0i01_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_utx4pvcf_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_utx4pvcf_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_utx4pvcf_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_utx4pvcf_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_utx4pvcf_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_utx4pvcf_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_uu3qz04q_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_uu3qz04q_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_uu3qz04q_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_uu3qz04q_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_uu3qz04q_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_uu3qz04q_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_uxnhgcjt_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_uxnhgcjt_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_uxnhgcjt_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_uxnhgcjt_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_uxnhgcjt_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_uxnhgcjt_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_vblt0qdl_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_vblt0qdl_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_vblt0qdl_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_vblt0qdl_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_vblt0qdl_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_vblt0qdl_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_vc005bnk_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_vc005bnk_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_vc005bnk_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_vc005bnk_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_vc005bnk_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_vc005bnk_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_x34s4ecp_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_x34s4ecp_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_x34s4ecp_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_x34s4ecp_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_x34s4ecp_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_x34s4ecp_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_xqab53ms_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_xqab53ms_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_xqab53ms_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_xqab53ms_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_xqab53ms_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_xqab53ms_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_xtm02ifk_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_xtm02ifk_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_xtm02ifk_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_xtm02ifk_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_xtm02ifk_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_xtm02ifk_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_yaoan0cr_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_yaoan0cr_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_yaoan0cr_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_yaoan0cr_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_yaoan0cr_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_yaoan0cr_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_yjce4yht_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_yjce4yht_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_yjce4yht_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_yjce4yht_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_yjce4yht_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_yjce4yht_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_z5wnyxfz_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_z5wnyxfz_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_z5wnyxfz_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_z5wnyxfz_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_z5wnyxfz_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_z5wnyxfz_wpftmp.sourcelink.json
+        ¦           ¦   NetVox.UI_zg043dbw_wpftmp.AssemblyInfo.cs
+        ¦           ¦   NetVox.UI_zg043dbw_wpftmp.AssemblyInfoInputs.cache
+        ¦           ¦   NetVox.UI_zg043dbw_wpftmp.assets.cache
+        ¦           ¦   NetVox.UI_zg043dbw_wpftmp.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   NetVox.UI_zg043dbw_wpftmp.GlobalUsings.g.cs
+        ¦           ¦   NetVox.UI_zg043dbw_wpftmp.sourcelink.json
+        ¦           ¦   NetworkSettingsWindow.baml
+        ¦           ¦   NetworkSettingsWindow.g.cs
+        ¦           ¦   NetworkSettingsWindow.g.i.cs
+        ¦           ¦   PduSettingsWindow.baml
+        ¦           ¦   PduSettingsWindow.g.cs
+        ¦           ¦   PduSettingsWindow.g.i.cs
+        ¦           ¦   RadioProfileView.baml
+        ¦           ¦   RadioProfileView.g.cs
+        ¦           ¦   RadioProfileView.g.i.cs
+        ¦           ¦   
+        ¦           +---ref
+        ¦           ¦       NetVox.UI.dll
+        ¦           ¦       
+        ¦           +---refint
+        ¦           ¦       NetVox.UI.dll
+        ¦           ¦       
+        ¦           +---Views
+        ¦                   ChannelManagementView.baml
+        ¦                   ChannelManagementView.g.cs
+        ¦                   ChannelManagementView.g.i.cs
+        ¦                   KeyboardSettingsView.baml
+        ¦                   KeyboardSettingsView.g.cs
+        ¦                   KeyboardSettingsView.g.i.cs
+        ¦                   
+        +---Views
+                ChannelManagementView.xaml
+                ChannelManagementView.xaml.cs
+                KeyboardSettingsView.xaml
+                KeyboardSettingsView.xaml.cs
+                KeyCaptureTextBox.cs
+                

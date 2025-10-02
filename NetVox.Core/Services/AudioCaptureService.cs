@@ -1,43 +1,98 @@
-﻿using System;
-using System.Linq;
+﻿// File: NetVox.Core/Services/AudioCaptureService.cs
+using System;
 using NAudio.Wave;
 
 namespace NetVox.Core.Services
 {
     /// <summary>
-    /// Captures audio from the default microphone in 16-bit PCM.
-    /// Raises AudioAvailable events with raw PCM buffers.
+    /// Captures microphone audio as 16-bit PCM mono and raises raw buffers.
     /// </summary>
-    public class AudioCaptureService
+    public sealed class AudioCaptureService : IDisposable
     {
-        private readonly WaveInEvent _waveIn;
+        private WaveInEvent? _waveIn;
+        private int _sampleRate;
+        private bool _isStarted;
 
         /// <summary>
-        /// Fired whenever a new buffer of audio is captured.
+        /// Fired whenever a buffer of audio has been captured.
+        /// Args: (buffer, bytesRecorded).
         /// </summary>
-        public event EventHandler<byte[]> AudioAvailable;
+        public event Action<byte[], int>? BytesCaptured;
 
-        public AudioCaptureService(int deviceNumber = 0, int sampleRate = 8000, int channels = 1)
+        /// <summary>Current sample rate in Hz (valid after Start).</summary>
+        public int CurrentSampleRate => _sampleRate;
+
+        /// <summary>Start capturing microphone at the given sample rate (Hz).</summary>
+        public void Start(int sampleRate)
         {
+            if (_isStarted)
+            {
+                if (_sampleRate == sampleRate) return;
+                Stop();
+            }
+
+            _sampleRate = sampleRate <= 0 ? 44100 : sampleRate;
+
             _waveIn = new WaveInEvent
             {
-                DeviceNumber = deviceNumber,
-                WaveFormat = new WaveFormat(sampleRate, 16, channels)
+                // 16-bit PCM mono
+                WaveFormat = new WaveFormat(_sampleRate, 16, 1),
+
+                // Smaller buffers => lower latency, more callbacks
+                // Typical values: 10–40 ms
+                BufferMilliseconds = 20,
+                NumberOfBuffers = 4
             };
+
             _waveIn.DataAvailable += OnDataAvailable;
+            _waveIn.RecordingStopped += OnRecordingStopped;
+
+            _waveIn.StartRecording();
+            _isStarted = true;
         }
 
-        private void OnDataAvailable(object sender, WaveInEventArgs e)
+        /// <summary>Stop capturing.</summary>
+        public void Stop()
         {
-            // Copy only the recorded bytes and raise the event
-            var buffer = e.Buffer.Take(e.BytesRecorded).ToArray();
-            AudioAvailable?.Invoke(this, buffer);
+            if (!_isStarted) return;
+
+            try
+            {
+                if (_waveIn != null)
+                {
+                    _waveIn.DataAvailable -= OnDataAvailable;
+                    _waveIn.RecordingStopped -= OnRecordingStopped;
+
+                    _waveIn.StopRecording();
+                    _waveIn.Dispose();
+                    _waveIn = null;
+                }
+            }
+            finally
+            {
+                _isStarted = false;
+            }
         }
 
-        /// <summary>Start capturing audio.</summary>
-        public void Start() => _waveIn.StartRecording();
+        private void OnDataAvailable(object? sender, WaveInEventArgs e)
+        {
+            if (e.BytesRecorded <= 0) return;
+            // Raise a copy so downstream code can hold onto it safely
+            var buf = new byte[e.BytesRecorded];
+            Buffer.BlockCopy(e.Buffer, 0, buf, 0, e.BytesRecorded);
+            BytesCaptured?.Invoke(buf, e.BytesRecorded);
+        }
 
-        /// <summary>Stop capturing audio.</summary>
-        public void Stop() => _waveIn.StopRecording();
+        private void OnRecordingStopped(object? sender, StoppedEventArgs e)
+        {
+            // NAudio sometimes calls RecordingStopped on a worker thread
+            // Ensure we’re fully torn down
+            Stop();
+        }
+
+        public void Dispose()
+        {
+            Stop();
+        }
     }
 }
