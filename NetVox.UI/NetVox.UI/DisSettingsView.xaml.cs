@@ -128,9 +128,42 @@ namespace NetVox.UI.Views
                 TxtRadioId.Text = rnd.ToString(CultureInfo.InvariantCulture);
             }
 
-            // LOCATION initial state
-            ComboAttachBy.SelectedIndex = 0; // NONE
+            // ===== LOCATION + IDENTIFIERS =====
+            // Exercise and Entity Identifier (surfaced on Location tab)
+            TxtExerciseId.Text = s.ExerciseId.ToString(CultureInfo.InvariantCulture);
+            TxtSiteId.Text = s.SiteId.ToString(CultureInfo.InvariantCulture);
+            TxtApplicationId.Text = s.ApplicationId.ToString(CultureInfo.InvariantCulture);
+            TxtEntityId.Text = s.EntityId.ToString(CultureInfo.InvariantCulture);
+
+            // Attach mode + marking
+            ComboAttachBy.SelectedIndex = s.AttachToEntityBy switch
+            {
+                AttachBy.None => 0,
+                AttachBy.EntityId => 1,
+                AttachBy.EntityMarking => 2,
+                _ => 0
+            };
+            TxtEntityMarking.Text = s.AttachEntityMarking ?? string.Empty;
+
+            // Absolute / Relative positions
+            TxtAbsX.Text = s.AbsoluteX.ToString(CultureInfo.InvariantCulture);
+            TxtAbsY.Text = s.AbsoluteY.ToString(CultureInfo.InvariantCulture);
+            TxtAbsZ.Text = s.AbsoluteZ.ToString(CultureInfo.InvariantCulture);
+
+            TxtRelX.Text = s.RelativeX.ToString(CultureInfo.InvariantCulture);
+            TxtRelY.Text = s.RelativeY.ToString(CultureInfo.InvariantCulture);
+            TxtRelZ.Text = s.RelativeZ.ToString(CultureInfo.InvariantCulture);
+
+            // Apply enable/disable based on chosen attach mode
             UpdateLocationMode();
+
+            // Antenna pattern + power + spread flags
+            ComboPatternType.SelectedIndex = s.PatternType == AntennaPatternType.DirectionalBeam ? 1 : 0;
+            TxtPowerW.Text = s.PowerW.ToString(CultureInfo.InvariantCulture);
+
+            ChkSpreadFH.IsChecked = s.SpreadFrequencyHopping;
+            ChkSpreadPN.IsChecked = s.SpreadPseudoNoise;
+            ChkSpreadTH.IsChecked = s.SpreadTimeHopping;
 
             // Preselect modulation from persisted settings (after lists exist)
             PreselectModulationFromSettings(s);
@@ -282,10 +315,42 @@ namespace NetVox.UI.Views
             s.Domain = ParseEnumFromCombo<Domain>(ComboDomain, s.Domain);
             s.Country = ParseEnumFromCombo<Country>(ComboCountry, s.Country);
 
+            // ===== LOCATION + IDENTIFIERS =====
+            if (ushort.TryParse(TxtExerciseId.Text?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var exId))
+                s.ExerciseId = exId;
+
+            if (ushort.TryParse(TxtSiteId.Text?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var site))
+                s.SiteId = site;
+
+            if (ushort.TryParse(TxtApplicationId.Text?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var app))
+                s.ApplicationId = app;
+
+            if (ushort.TryParse(TxtEntityId.Text?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var ent))
+                s.EntityId = ent;
+
+            s.AttachToEntityBy = ComboAttachBy.SelectedIndex switch
+            {
+                1 => AttachBy.EntityId,
+                2 => AttachBy.EntityMarking,
+                _ => AttachBy.None
+            };
+            s.AttachEntityMarking = TxtEntityMarking.Text ?? string.Empty;
+
+            if (double.TryParse(TxtAbsX.Text?.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var ax)) s.AbsoluteX = ax;
+            if (double.TryParse(TxtAbsY.Text?.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var ay)) s.AbsoluteY = ay;
+            if (double.TryParse(TxtAbsZ.Text?.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var az)) s.AbsoluteZ = az;
+
+            if (double.TryParse(TxtRelX.Text?.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var rx)) s.RelativeX = rx;
+            if (double.TryParse(TxtRelY.Text?.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var ry)) s.RelativeY = ry;
+            if (double.TryParse(TxtRelZ.Text?.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var rz)) s.RelativeZ = rz;
+
             // ANTENNA CONFIGURATION: persist modulation triplet and simple fields
             s.ModulationMajor = SelectedCode(ComboMajorType);
             s.ModulationDetail = SelectedCode(ComboDetail);
             s.ModulationSystem = SelectedCode(ComboSystem);
+
+            // Pattern
+            s.PatternType = ComboPatternType.SelectedIndex == 1 ? AntennaPatternType.DirectionalBeam : AntennaPatternType.Omnidirectional;
 
             // Power (optional; best-effort parse)
             if (double.TryParse(TxtPowerW.Text?.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var pw))
@@ -571,5 +636,16 @@ namespace NetVox.UI.Views
             ( (ushort)12, "Enhanced SINCGARS 7.3"),
             ( (ushort)13, "Navigation Aid")
         };
+
+        // ========= PUBLIC HELPER FOR SHELL =========
+        /// <summary>
+        /// Applies whatever is currently on-screen into _pduService.Settings,
+        /// then raises the existing Applied event so the shell can persist.
+        /// </summary>
+        public void ApplyAndRaise()
+        {
+            // Reuse the same validation and event flow as the Apply button.
+            BtnApply_Click(this, new RoutedEventArgs());
+        }
     }
 }

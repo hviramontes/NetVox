@@ -17,7 +17,7 @@ namespace NetVox.Core.Services
     public sealed class RadioService : IRadioService
     {
         private readonly IPduService _pdu;
-        private readonly AudioCaptureService _capture; // adjust to your actual capture interface if needed
+        private readonly AudioCaptureService _capture; // mic capture: 16-bit PCM, little-endian
         private readonly object _gate = new();
 
         private volatile bool _isTransmitting;
@@ -31,7 +31,7 @@ namespace NetVox.Core.Services
             _capture = capture ?? throw new ArgumentNullException(nameof(capture));
             _pdu = pdu ?? throw new ArgumentNullException(nameof(pdu));
 
-            // Hook capture callback (adjust the event name/signature if your capture differs)
+            // mic callback
             _capture.BytesCaptured += OnBytesCaptured;
         }
 
@@ -48,7 +48,7 @@ namespace NetVox.Core.Services
             lock (_gate)
             {
                 _currentChannelNumber = channelNumber;
-                // Example if you map channel -> radio id:
+                // Example mapping (if desired):
                 // _pdu.Settings.RadioId = (ushort)channelNumber;
             }
         }
@@ -70,11 +70,11 @@ namespace NetVox.Core.Services
 
             try
             {
-                // Start capture for the configured sample rate
+                // Start mic at configured SR (mic always 16-bit PCM mono)
                 _capture.Start(_pdu.Settings.SampleRate);
 
                 // DIS Transmitter PDU: ON
-                await _pdu.SendTransmitterPduAsync(isOn: true).ConfigureAwait(false);
+                await _pdu.SendTransmitterPduAsync(true).ConfigureAwait(false);
 
                 _pdu.Log($"[PTT] Transmit Started (ch={_currentChannelNumber}, sr={_pdu.Settings.SampleRate}, codec={_pdu.Settings.Codec})");
                 TransmitStarted?.Invoke(this, EventArgs.Empty);
@@ -101,14 +101,14 @@ namespace NetVox.Core.Services
 
             try
             {
-                // Stop capture so no further bytes arrive
+                // Stop mic so no further buffers come in
                 _capture.Stop();
 
-                // Flush any partial audio still buffered for a final Signal PDU
+                // Flush any partial audio the PDU framer was holding
                 _pdu.FlushSignalHold();
 
                 // DIS Transmitter PDU: OFF
-                await _pdu.SendTransmitterPduAsync(isOn: false).ConfigureAwait(false);
+                await _pdu.SendTransmitterPduAsync(false).ConfigureAwait(false);
 
                 _pdu.Log("[PTT] Transmit Stopped");
                 TransmitStopped?.Invoke(this, EventArgs.Empty);
@@ -121,30 +121,60 @@ namespace NetVox.Core.Services
         }
 
         /// <summary>
-        /// Called when the capture layer produces a chunk of audio.
-        /// Forwards to the PDU layer if PTT is active.
+        /// Mic callback: we always receive 16-bit PCM (little-endian) from NAudio.
+        /// Forward the raw 16-bit source to PduService. PduService performs the correct
+        /// on-wire conversion based on Settings.Codec (keeps PCM16 path untouched).
         /// </summary>
         private void OnBytesCaptured(byte[] buffer, int count)
         {
             if (buffer == null || count <= 0) return;
             if (!_isTransmitting) return;
 
-            // Let PDU layer frame and send Signal PDUs
-            _ = _pdu.SendSignalPduAsync(buffer, 0, count);
+            try
+            {
+                // Always forward source 16-bit PCM; PduService handles conversion (PCM16/PCM8).
+                _ = _pdu.SendSignalPduAsync(buffer, 0, count);
+            }
+            catch (Exception ex)
+            {
+                _pdu.Log($"[TX] OnBytesCaptured error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Convert 16-bit PCM (little-endian, mono) to 8-bit unsigned PCM.
+        /// Mapping: -32768..32767  ->  0..255
+        /// Fast path: (sample >> 8) + 128.
+        /// NOTE: Left in place for future use; not used in the current TX path.
+        /// </summary>
+        private static byte[] ConvertPcm16LeToPcm8Unsigned(byte[] src, int count)
+        {
+            int samples16 = (count >> 1);
+            var dst = new byte[samples16];
+
+            int si = 0;
+            for (int di = 0; di < samples16; di++)
+            {
+                short s = (short)(src[si] | (src[si + 1] << 8));
+                si += 2;
+
+                int u = (s >> 8) + 128;
+                if ((uint)u > 255u) u = (u < 0) ? 0 : 255;
+                dst[di] = (byte)u;
+            }
+
+            return dst;
         }
 
         // ===== Interface persistence hooks (void signatures per IRadioService) =====
 
         public void SaveProfile(string fileName)
         {
-            // If your app persists via a repository elsewhere, call it from here.
-            // This no-op implementation simply logs to avoid breaking builds.
             _pdu.Log($"[Radio] SaveProfile('{fileName}') (no-op in RadioService)");
         }
 
         public void LoadProfile(string fileName)
         {
-            // Likewise, wire up to your repository if needed.
             _pdu.Log($"[Radio] LoadProfile('{fileName}') (no-op in RadioService)");
         }
     }

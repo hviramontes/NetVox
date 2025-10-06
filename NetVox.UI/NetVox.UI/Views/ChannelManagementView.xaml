@@ -58,6 +58,7 @@
         <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right">
             <Button Content="➕ Add" Name="BtnAddChannel" Width="80" Margin="5" />
             <Button Content="🗑 Delete" Name="BtnDeleteChannel" Width="80" Margin="5" />
+            <Button Content="↩ Restore Defaults" Name="BtnRestoreDefaults" Width="160" Margin="5" />
             <Button Content="💾 Save Channels" Name="BtnSave" Width="120" Margin="5" />
         </StackPanel>
     </Grid>

@@ -12,6 +12,9 @@ namespace NetVox.UI.Views
     {
         private readonly ObservableCollection<ChannelConfig> _channels;
 
+        // Fired when the user clicks the "Restore Defaults" button in the XAML.
+        public event Action? RestoreDefaultsRequested;
+
         public ChannelManagementView()
         {
             InitializeComponent();
@@ -23,6 +26,12 @@ namespace NetVox.UI.Views
             BtnAddChannel.Click += BtnAddChannel_Click;
             BtnDeleteChannel.Click += BtnDeleteChannel_Click;
             BtnSave.Click += BtnSave_Click;
+
+            // NEW: wire up Restore Defaults button
+            if (FindName("BtnRestoreDefaults") is Button restoreBtn)
+            {
+                restoreBtn.Click += (_, __) => RestoreDefaultsRequested?.Invoke();
+            }
         }
 
         private void BtnAddChannel_Click(object? sender, RoutedEventArgs e)
@@ -83,7 +92,9 @@ namespace NetVox.UI.Views
         /// <summary>Write the current grid back to the profile.</summary>
         public void SaveChannels(Profile profile)
         {
+            profile.Channels ??= new List<ChannelConfig>();
             profile.Channels.Clear();
+
             foreach (var chan in _channels)
             {
                 profile.Channels.Add(new ChannelConfig

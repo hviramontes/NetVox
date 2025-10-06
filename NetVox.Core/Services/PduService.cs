@@ -14,7 +14,8 @@ namespace NetVox.Core.Services
 
         public event Action<string>? LogEvent;
 
-        // --- TX hold (leftover capture bytes that don't fill a full PDU frame yet)
+        // --- TX hold (leftover capture bytes that don't fill a full PDU frame yet).
+        // NOTE: This buffer always stores SOURCE audio from the mic: 16-bit PCM little-endian.
         private byte[] _txHold = new byte[8192];
         private int _txHoldCount = 0;
         private readonly object _txLock = new();
@@ -25,7 +26,10 @@ namespace NetVox.Core.Services
         private const byte PDU_TYPE_TRANSMITTER = 25;
         private const byte PDU_TYPE_RECEIVER = 27;
 
-        private const ushort ENCODING_SCHEME_PCM16_BE = 0x0004; // Encoded Audio + 16-bit linear PCM (big-endian)
+        // Encoding Scheme (IEEE 1278.1a “Encoding Class: Encoded Audio (0)” + Type)
+        private const ushort ENCODING_SCHEME_PCM16_BE = 0x0004;      // 16-bit linear PCM, big-endian
+        private const ushort ENCODING_SCHEME_PCM8_UNSIGNED = 0x0005; // 8-bit linear PCM, unsigned
+
         private const ushort TDL_TYPE_OTHER = 0;
 
         public PduService(INetworkService network)
@@ -56,14 +60,19 @@ namespace NetVox.Core.Services
             var sr = Settings.SampleRate <= 0 ? 44100 : Settings.SampleRate;
             var codec = Settings.Codec;
 
-            int bytesPerSample = codec switch
-            {
-                CodecType.Pcm16 => 2,
-                _ => 1 // Pcm8 or MuLaw handled as 1 byte each here
-            };
+            // ---- IMPORTANT: Source vs Target formats ----
+            // Source (from mic) is ALWAYS 16-bit PCM little-endian, mono.
+            const int sourceBytesPerSample = 2;
 
-            int frameSamples = PickFrameSamples(sr);
-            int frameBytes = frameSamples * bytesPerSample;
+            // Target (on the wire) depends on Codec:
+            //   - Pcm16: 16-bit big-endian
+            //   - Pcm8 : 8-bit unsigned
+            int targetBytesPerSample = codec == CodecType.Pcm16 ? 2 : 1;
+
+            // Frame by SAMPLES (not bytes). Choose a nice “audio frame” size by sample rate,
+            // then compute how many SOURCE BYTES we need to accumulate to make one frame.
+            int frameSamples = PickFrameSamples(codec, sr);
+            int frameBytesSource = frameSamples * sourceBytesPerSample;
 
             int appended;
             lock (_txLock)
@@ -75,44 +84,76 @@ namespace NetVox.Core.Services
             }
 
             int chunks = 0;
-            int totalSentBytes = 0;
+            int totalSentBytes = 0; // bytes of SOURCE consumed
             int remainingAfter = 0;
 
-            // Consume full frames
             while (true)
             {
-                byte[] payload = null;
-
+                byte[] src; // SOURCE bytes (16-bit LE)
                 lock (_txLock)
                 {
-                    if (_txHoldCount < frameBytes)
+                    if (_txHoldCount < frameBytesSource)
                     {
                         remainingAfter = _txHoldCount;
                         break;
                     }
 
-                    payload = new byte[frameBytes];
-                    Buffer.BlockCopy(_txHold, 0, payload, 0, frameBytes);
+                    src = new byte[frameBytesSource];
+                    Buffer.BlockCopy(_txHold, 0, src, 0, frameBytesSource);
 
-                    // shift left remaining
-                    int left = _txHoldCount - frameBytes;
+                    // shift remaining source bytes left
+                    int left = _txHoldCount - frameBytesSource;
                     if (left > 0)
-                        Buffer.BlockCopy(_txHold, frameBytes, _txHold, 0, left);
+                        Buffer.BlockCopy(_txHold, frameBytesSource, _txHold, 0, left);
                     _txHoldCount = left;
                 }
 
-                // Convert payload to big-endian for PCM16 (NAudio capture is little-endian)
+                // Convert SOURCE(16-bit LE) -> TARGET payload
+                byte[] payload;
+                ushort encodingScheme;
+
                 if (codec == CodecType.Pcm16)
                 {
-                    for (int i = 0; i < payload.Length; i += 2)
+                    // Target is 16-bit BIG-endian. Just swap each 16-bit sample.
+                    payload = new byte[src.Length];
+                    for (int i = 0; i < src.Length; i += 2)
                     {
-                        byte lo = payload[i];
-                        payload[i] = payload[i + 1];
-                        payload[i + 1] = lo;
+                        byte lo = src[i];
+                        byte hi = src[i + 1];
+                        payload[i] = hi;       // big-endian high
+                        payload[i + 1] = lo;   // big-endian low
                     }
+                    encodingScheme = ENCODING_SCHEME_PCM16_BE;
+                }
+                else if (codec == CodecType.Pcm8)
+                {
+                    // Target is 8-bit UNSIGNED.
+                    // Convert each 16-bit little-endian sample to 8-bit: (sample >> 8) + 128
+                    // This uses the top 8 bits and biases to unsigned range.
+                    payload = new byte[frameSamples]; // one byte per sample
+                    int si = 0;
+                    for (int s = 0; s < frameSamples; s++)
+                    {
+                        // read LE 16
+                        short sample16 = (short)(src[si] | (src[si + 1] << 8));
+                        si += 2;
+
+                        // downscale to 8-bit unsigned
+                        int s8 = (sample16 >> 8) + 128; // [-32768..32767] -> [0..255]
+                        if (s8 < 0) s8 = 0;
+                        if (s8 > 255) s8 = 255;
+                        payload[s] = (byte)s8;
+                    }
+                    encodingScheme = ENCODING_SCHEME_PCM8_UNSIGNED;
+                }
+                else
+                {
+                    // Not implemented codecs (e.g., MuLaw) – skip sending to avoid bad wire format.
+                    Log("[PDU] Skipped frame: codec not implemented on TX path.");
+                    continue;
                 }
 
-                // Build Signal PDU
+                // Build Signal PDU with TARGET payload (payload length drives DataLength/NumSamples).
                 byte[] pdu = BuildSignalPdu(
                     version: (byte)Settings.Version,
                     exerciseId: (byte)Settings.ExerciseId,
@@ -121,30 +162,30 @@ namespace NetVox.Core.Services
                     entityId: Settings.EntityId,
                     radioId: Settings.RadioId,
                     sampleRate: sr,
-                    encodingScheme: codec == CodecType.Pcm16 ? ENCODING_SCHEME_PCM16_BE : (ushort)0x0000,
+                    encodingScheme: encodingScheme,
                     tdlType: TDL_TYPE_OTHER,
                     audioPayload: payload,
-                    bytesPerSample: bytesPerSample
+                    bytesPerSample: targetBytesPerSample // used to compute “Number of Samples”
                 );
 
                 await _network.SendAsync(pdu).ConfigureAwait(false);
 
                 chunks++;
-                totalSentBytes += frameBytes;
+                totalSentBytes += frameBytesSource; // we consumed this many SOURCE bytes
             }
 
-            LogEvent?.Invoke($"[LOG] [PDU-DIAG] srSetting={sr} srHeader={sr} codec={codec} chunkBytes={frameBytes} samples={frameSamples} ex={Settings.ExerciseId} site={Settings.SiteId} app={Settings.ApplicationId} ent={Settings.EntityId} radio={Settings.RadioId}");
-            LogEvent?.Invoke($"[LOG] [PDU] Signal sent in {Math.Max(chunks, 1)} chunk(s), totalBytes={Math.Max(totalSentBytes, Math.Min(appended, frameBytes))}, frameBytes={frameBytes}, remaining={remainingAfter}");
+            LogEvent?.Invoke($"[LOG] [PDU-DIAG] srSetting={sr} codec={codec} frameSamples={frameSamples} srcBytesPerSample={sourceBytesPerSample} tgtBytesPerSample={targetBytesPerSample} ex={Settings.ExerciseId} site={Settings.SiteId} app={Settings.ApplicationId} ent={Settings.EntityId} radio={Settings.RadioId}");
+            LogEvent?.Invoke($"[LOG] [PDU] Signal sent in {Math.Max(chunks, 1)} chunk(s), sourceBytesConsumed={Math.Max(totalSentBytes, Math.Min(appended, frameBytesSource))}, remainingSourceBytes={remainingAfter}");
         }
 
-        // Convenience overload for callers who provide the whole buffer
+        // Convenience overload
         public Task SendSignalPduAsync(byte[] buffer)
             => SendSignalPduAsync(buffer, 0, buffer?.Length ?? 0);
 
         // =========================================================
         // Type 25: Transmitter PDU
         // =========================================================
-        public async Task SendTransmitterPduAsync(bool isTransmitting)
+        public async Task SendTransmitterPduAsync(bool isOn)
         {
             var pdu = BuildTransmitterPdu(
                 version: (byte)Settings.Version,
@@ -153,12 +194,12 @@ namespace NetVox.Core.Services
                 appId: Settings.ApplicationId,
                 entityId: Settings.EntityId,
                 radioId: Settings.RadioId,
-                isTransmitting: isTransmitting
+                isTransmitting: isOn
             );
 
             await _network.SendAsync(pdu).ConfigureAwait(false);
 
-            LogEvent?.Invoke($"[LOG] [PDU-25] Transmitter {(isTransmitting ? "ON (Tx)" : "ON (Idle)")} sent, len={pdu.Length}");
+            LogEvent?.Invoke($"[LOG] [PDU-25] Transmitter {(isOn ? "ON (Tx)" : "ON (Idle)")} sent, len={pdu.Length}");
         }
 
         // =========================================================
@@ -172,14 +213,22 @@ namespace NetVox.Core.Services
 
         // ---------- helpers ----------
 
-        private static int PickFrameSamples(int sampleRate)
+        private static int PickFrameSamples(CodecType codec, int sampleRate)
         {
-            // Matches your traffic patterns: 80 for 8k, 160 for 16k, 320 for 32k, 480 for >= 44.1k
+            // Make 8-bit @ 44.1 kHz match CNR-Sim framing (960 samples ~21.8 ms)
+            if (codec == CodecType.Pcm8 && sampleRate >= 44100) return 960;
+
+            // Otherwise keep our previous framing:
+            // 80 for 8k, 160 for 16k, 320 for 32k, 480 for >= 44.1k
             if (sampleRate <= 8000) return 80;
             if (sampleRate <= 16000) return 160;
             if (sampleRate <= 32000) return 320;
             return 480;
         }
+
+        // Back-compat wrapper (only used if anything still calls the old signature)
+        private static int PickFrameSamples(int sampleRate) => PickFrameSamples(CodecType.Pcm16, sampleRate);
+
 
         private void EnsureHoldCapacity(int needed)
         {
@@ -236,13 +285,13 @@ namespace NetVox.Core.Services
 
         private static void WriteEntityType(byte[] buf, int offset, EntityKind kind, Domain domain, Country country, byte category = 0, byte subcategory = 0, byte specific = 0, byte extra = 0)
         {
-            buf[offset + 0] = (byte)kind;              // kind (1)
-            buf[offset + 1] = (byte)domain;            // domain (1)
+            buf[offset + 0] = (byte)kind;               // kind (1)
+            buf[offset + 1] = (byte)domain;             // domain (1)
             WriteBE16(buf, offset + 2, (ushort)country);// country (2)
-            buf[offset + 4] = category;                // category (1)
-            buf[offset + 5] = subcategory;             // subcategory (1)
-            buf[offset + 6] = specific;                // specific (1)
-            buf[offset + 7] = extra;                   // extra (1)
+            buf[offset + 4] = category;                 // category (1)
+            buf[offset + 5] = subcategory;              // subcategory (1)
+            buf[offset + 6] = specific;                 // specific (1)
+            buf[offset + 7] = extra;                    // extra (1)
         }
 
         private static ushort BuildSpreadFlags(bool freqHop, bool pseudoNoise, bool timeHop)
@@ -354,14 +403,12 @@ namespace NetVox.Core.Services
             const int LEN_ANT_WORLD = 24;   // Vector3Double
             const int LEN_ANT_REL = 12;     // Vector3Float
             const int LEN_PATTERN_HDR = 4;  // AntennaPatternType (2) + PatternLength (2)
-            const int LEN_FREQ = 8;         // double
+            const int LEN_FREQ = 8;         // double (we send uint64 bits via WriteBE64)
             const int LEN_BW = 4;           // float
             const int LEN_POWER = 4;        // float
             const int LEN_MODTYPE = 8;      // spread(2) + major(2) + detail(2) + system(2)
             const int LEN_CRYPTO = 4;       // cryptoSystem(2) + cryptoKeyId(2)
             const int LEN_MODPAR_HDR = 4;   // modulationParamLength(2) + padding(2)
-            const int VAR_PATTERN = 0;      // none
-            const int VAR_MODPARAM = 0;     // none
 
             int bodyLen =
                 LEN_ENTITY_ID +
@@ -376,9 +423,7 @@ namespace NetVox.Core.Services
                 LEN_POWER +
                 LEN_MODTYPE +
                 LEN_CRYPTO +
-                LEN_MODPAR_HDR +
-                VAR_PATTERN +
-                VAR_MODPARAM;
+                LEN_MODPAR_HDR;
 
             int pduLen = 12 + bodyLen;
 
@@ -439,7 +484,7 @@ namespace NetVox.Core.Services
             WriteBE64(buf, o, freqHzU64);
             o += LEN_FREQ;
 
-            // Bandwidth (float) — not in UI; 0
+            // Bandwidth (float)
             WriteBEFloat(buf, o, (float)Settings.BandwidthHz);
             o += LEN_BW;
 

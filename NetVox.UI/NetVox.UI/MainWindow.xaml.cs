@@ -95,13 +95,16 @@ namespace NetVox.UI
             _repo = new JsonConfigRepository();
             if (!File.Exists(fullProfilePath))
             {
+                // First run: create a profile WITH default channels
                 _profile = new Profile
                 {
-                    Channels = new System.Collections.Generic.List<ChannelConfig>(),
+                    Channels = BuildDefaultChannels(),
                     Network = new NetworkConfig(),
                     Dis = new PduSettings()
                 };
-                _repo.SaveProfile(_profile, profileFileName); // repo expects just file name
+
+                // Save so the user sees defaults next run too
+                _repo.SaveProfile(_profile, profileFileName);
             }
             else
             {
@@ -113,20 +116,31 @@ namespace NetVox.UI
                         Network = new NetworkConfig(),
                         Dis = new PduSettings()
                     };
+
                     // null safety for older saves
                     _profile.Network ??= new NetworkConfig();
                     _profile.Dis ??= new PduSettings();
+
+                    // If an existing profile has 0 channels, seed defaults (non-destructive)
+                    if (_profile.Channels == null || _profile.Channels.Count == 0)
+                    {
+                        _profile.Channels = BuildDefaultChannels();
+                        _repo.SaveProfile(_profile, profileFileName);
+                    }
                 }
                 catch
                 {
+                    // On load failure, fall back to defaults so user still gets a working profile
                     _profile = new Profile
                     {
-                        Channels = new System.Collections.Generic.List<ChannelConfig>(),
+                        Channels = BuildDefaultChannels(),
                         Network = new NetworkConfig(),
                         Dis = new PduSettings()
                     };
+                    _repo.SaveProfile(_profile, profileFileName);
                 }
             }
+
 
             // Initialize services
             _networkService = new NetworkService();
@@ -174,8 +188,14 @@ namespace NetVox.UI
             BtnChannelManagement.Click += (_, _) =>
             {
                 _channelView.LoadChannels(_profile);
+
+                // Subscribe once to the Channels view's "Restore Defaults" request
+                _channelView.RestoreDefaultsRequested -= OnRestoreDefaultsRequested;
+                _channelView.RestoreDefaultsRequested += OnRestoreDefaultsRequested;
+
                 MainContent.Content = _channelView;
             };
+
 
             BtnKeyboardSettings.Click += (_, _) =>
             {
@@ -449,10 +469,23 @@ namespace NetVox.UI
 
             try
             {
-                _profile.Channels = _channelView.GetCurrentChannels();
-                _repo.SaveProfile(_profile, profileFileName); // repo expects just the file name
+                // Only pull from ChannelManagementView if it is currently displayed,
+                // otherwise keep whatever is already in _profile.Channels.
+                if (MainContent?.Content is ChannelManagementView)
+                {
+                    var edited = _channelView.GetCurrentChannels();
+                    if (edited != null && edited.Count > 0)
+                        _profile.Channels = edited;
+                }
+
+                _repo.SaveProfile(_profile, profileFileName);
                 System.Diagnostics.Debug.WriteLine($"Saved profile to {_basePath}\\{profileFileName}");
-                TxtStatus.Text = ChannelStatus();
+
+                // Don’t call ChannelStatus() if there are zero channels; guard it.
+                if (HasChannels())
+                    TxtStatus.Text = ChannelStatus();
+                else
+                    TxtStatus.Text = "Ready – No channels loaded";
             }
             catch (Exception ex)
             {
@@ -690,8 +723,73 @@ namespace NetVox.UI
             }
         }
 
+        private static System.Collections.Generic.List<ChannelConfig> BuildDefaultChannels()
+        {
+            // Default channels (MHz -> Hz), 44 kHz bandwidth each
+            return new System.Collections.Generic.List<ChannelConfig>
+    {
+        new ChannelConfig { ChannelNumber = 0, Name = "SIMCON",     FrequencyHz = 32000000, BandwidthHz = 44000 }, // 32.000 MHz
+        new ChannelConfig { ChannelNumber = 1, Name = "BLUE LOCON", FrequencyHz = 40000000, BandwidthHz = 44000 }, // 40.000 MHz
+        new ChannelConfig { ChannelNumber = 2, Name = "SAFETY",     FrequencyHz = 32100000, BandwidthHz = 44000 }, // 32.100 MHz
+        new ChannelConfig { ChannelNumber = 3, Name = "BATTALION",  FrequencyHz = 40050000, BandwidthHz = 44000 }, // 40.050 MHz
+        new ChannelConfig { ChannelNumber = 4, Name = "COMPANY",    FrequencyHz = 40100000, BandwidthHz = 44000 }, // 40.100 MHz
+        new ChannelConfig { ChannelNumber = 5, Name = "TAD",        FrequencyHz = 32150000, BandwidthHz = 44000 }, // 32.150 MHz
+    };
+        }
+
+        // Handle "Restore Defaults" coming from ChannelManagementView
+        private void OnRestoreDefaultsRequested()
+        {
+            var ask = MessageBox.Show(
+                "Restore the default channels? This will replace your current list.",
+                "Restore Default Channels",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (ask != MessageBoxResult.Yes)
+                return;
+
+            // 1) Replace in-memory channels and reset selection
+            _profile.Channels = BuildDefaultChannels();
+            _currentChannelIndex = 0;
+
+            // 2) Push the new list into the grid BEFORE saving (so SaveProfileToDisk picks up the new list)
+            _channelView.LoadChannels(_profile);
+
+            // 3) Persist to disk
+            SaveProfileToDisk();
+
+            // 4) Refresh status and (optionally) re-apply first channel to radio/DIS if any
+            TxtStatus.Text = $"Restored {_profile.Channels.Count} default channels";
+
+            if (HasChannels())
+            {
+                var ch = _profile.Channels[_currentChannelIndex];
+                _radio.SetChannel(ch.ChannelNumber);
+                _pduService.Settings.FrequencyHz = (int)ch.FrequencyHz;
+                _pduService.Settings.BandwidthHz = ch.BandwidthHz;
+            }
+        }
+
+
         protected override void OnClosed(EventArgs e)
         {
+            try
+            {
+                // Auto-apply any pending DIS changes so they persist even if Apply wasn't clicked.
+                if (_disView != null)
+                {
+                    try { _disView.ApplyAndRaise(); } catch { /* ignore validation popups on shutdown */ }
+                }
+
+                // Auto-save profile (safer version prevents losing changes)
+                SaveProfileToDisk();
+            }
+            catch
+            {
+                // Swallow to avoid shutdown crash if disk is locked, etc.
+            }
+
             try
             {
                 _keyboardListener?.Stop();

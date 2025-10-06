@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using NetVox.Core.Interfaces;
 using NetVox.Core.Models;
+using NAudio.CoreAudioApi;
 
 namespace NetVox.UI.Views
 {
@@ -21,7 +22,6 @@ namespace NetVox.UI.Views
             InitializeComponent();
             _pduService = pduService;
 
-            Loaded += AudioSettingsView_Loaded;
             BtnApply.Click += BtnApply_Click;
         }
 
@@ -57,16 +57,71 @@ namespace NetVox.UI.Views
             if (ComboPlaybackRate.SelectedItem == null)
                 ComboPlaybackRate.SelectedItem = persistedHz;
 
-            // Devices — leave as-is; your existing XAML might pre-populate these.
-            if (ComboOutputDevice.Items.Count == 0)
+            try
             {
-                ComboOutputDevice.ItemsSource = new[] { "Default Output Device" };
-                ComboOutputDevice.SelectedIndex = 0;
+                using var mm = new MMDeviceEnumerator();
+
+                // Outputs (Render)
+                var outputs = mm.EnumerateAudioEndPoints(NAudio.CoreAudioApi.DataFlow.Render, NAudio.CoreAudioApi.DeviceState.Active)
+                                .Select(d => d.FriendlyName)
+                                .Distinct()
+                                .OrderBy(n => n)
+                                .ToList();
+                if (outputs.Count == 0) outputs.Add("Default Output Device");
+                ComboOutputDevice.ItemsSource = outputs;
+
+                // Prefer the OS default output if it’s present
+                try
+                {
+                    var defOut = mm.GetDefaultAudioEndpoint(NAudio.CoreAudioApi.DataFlow.Render,
+                                                            NAudio.CoreAudioApi.Role.Multimedia)?.FriendlyName;
+                    if (!string.IsNullOrWhiteSpace(defOut) && outputs.Contains(defOut))
+                        ComboOutputDevice.SelectedItem = defOut;
+                }
+                catch { /* ignore — will fall back below */ }
+
+                // Fallback to first item if nothing selected
+                if (ComboOutputDevice.SelectedIndex < 0)
+                    ComboOutputDevice.SelectedIndex = 0;
+
+                // Inputs (Capture)
+                var inputs = mm.EnumerateAudioEndPoints(NAudio.CoreAudioApi.DataFlow.Capture, NAudio.CoreAudioApi.DeviceState.Active)
+                               .Select(d => d.FriendlyName)
+                               .Distinct()
+                               .OrderBy(n => n)
+                               .ToList();
+                if (inputs.Count == 0) inputs.Add("Default Input Device");
+                ComboInputDevice.ItemsSource = inputs;
+
+                // Prefer the OS default input if it’s present
+                try
+                {
+                    var defIn = mm.GetDefaultAudioEndpoint(NAudio.CoreAudioApi.DataFlow.Capture,
+                                                           NAudio.CoreAudioApi.Role.Multimedia)?.FriendlyName;
+                    if (!string.IsNullOrWhiteSpace(defIn) && inputs.Contains(defIn))
+                        ComboInputDevice.SelectedItem = defIn;
+                }
+                catch { /* ignore — will fall back below */ }
+
+                // Fallback to first item if nothing selected
+                if (ComboInputDevice.SelectedIndex < 0)
+                    ComboInputDevice.SelectedIndex = 0;
             }
-            if (ComboInputDevice.Items.Count == 0)
+            catch (Exception ex)
             {
-                ComboInputDevice.ItemsSource = new[] { "Default Input Device" };
-                ComboInputDevice.SelectedIndex = 0;
+                System.Diagnostics.Debug.WriteLine("[Audio Enum] " + ex.Message);
+
+                // Fallback placeholders so the UI doesn't look empty if enumeration fails
+                if (ComboOutputDevice.Items.Count == 0)
+                {
+                    ComboOutputDevice.ItemsSource = new[] { "Default Output Device" };
+                    ComboOutputDevice.SelectedIndex = 0;
+                }
+                if (ComboInputDevice.Items.Count == 0)
+                {
+                    ComboInputDevice.ItemsSource = new[] { "Default Input Device" };
+                    ComboInputDevice.SelectedIndex = 0;
+                }
             }
 
             // Jitter default if empty

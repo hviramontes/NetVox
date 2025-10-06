@@ -10,7 +10,10 @@ using NetVox.Core.Models;
 namespace NetVox.Core.Services
 {
     /// <summary>
-    /// Minimal DIS Signal (Type 26) receiver that plays back PCM16 audio (encoding scheme 0x0004).
+    /// Minimal DIS Signal (Type 26) receiver that plays back:
+    ///   - 16-bit PCM big-endian (encoding 0x0004)
+    ///   - 8-bit PCM unsigned (encoding 0x0005) [converted to 16-bit for playback]
+    ///
     /// Joins multicast if DestinationIPAddress is multicast, otherwise listens on the configured port.
     /// </summary>
     public sealed class SignalRxService : IDisposable
@@ -110,7 +113,6 @@ namespace NetVox.Core.Services
 
                 ushort enc = ReadBE16(data, o); // Encoding Scheme
                 o += 2;
-                if (enc != 0x0004) continue;    // Only PCM16 big-endian
 
                 o += 2;                           // TDL Type
                 int sampleRate = ReadBE32(data, o);  // Sample Rate
@@ -129,23 +131,50 @@ namespace NetVox.Core.Services
 
                 _playback.EnsureFormat(sampleRate);
 
-                if (byteLen >= 2)
+                if (enc == 0x0004)
                 {
-                    var pcm = new byte[byteLen];
-                    Buffer.BlockCopy(data, o, pcm, 0, byteLen);
-
-                    // Convert Big Endian -> Little Endian
-                    for (int i = 0; i < byteLen - 1; i += 2)
+                    // 16-bit PCM (big-endian) → swap to little-endian and play
+                    if (byteLen >= 2)
                     {
-                        byte hi = pcm[i];
-                        pcm[i] = pcm[i + 1];
-                        pcm[i + 1] = hi;
+                        var pcm16 = new byte[byteLen];
+                        Buffer.BlockCopy(data, o, pcm16, 0, byteLen);
+
+                        // Big-endian to little-endian
+                        for (int i = 0; i < byteLen - 1; i += 2)
+                        {
+                            byte hi = pcm16[i];
+                            pcm16[i] = pcm16[i + 1];
+                            pcm16[i + 1] = hi;
+                        }
+
+                        _playback.EnqueuePcm16(pcm16, 0, pcm16.Length);
+                        PacketReceived?.Invoke(sampleRate);
+                    }
+                }
+                else if (enc == 0x0005)
+                {
+                    // 8-bit PCM unsigned → convert to 16-bit signed little-endian and play
+                    // Mapping: 0..255 unsigned → -32768..+32767 signed (center 128 → 0)
+                    var pcm8 = new byte[byteLen];
+                    Buffer.BlockCopy(data, o, pcm8, 0, byteLen);
+
+                    var pcm16 = new byte[pcm8.Length * 2];
+                    int w = 0;
+                    for (int i = 0; i < pcm8.Length; i++)
+                    {
+                        int u = pcm8[i];               // 0..255
+                        int s = (u - 128) << 8;        // -32768..+32767
+                        // little-endian: low byte first
+                        pcm16[w++] = (byte)(s & 0xFF);
+                        pcm16[w++] = (byte)((s >> 8) & 0xFF);
                     }
 
-                    _playback.EnqueuePcm16(pcm, 0, pcm.Length);
-
-                    // Tell the UI we got a packet
+                    _playback.EnqueuePcm16(pcm16, 0, pcm16.Length);
                     PacketReceived?.Invoke(sampleRate);
+                }
+                else
+                {
+                    // Unknown/unsupported encoding; ignore quietly (e.g., μ-law/other until added)
                 }
             }
         }
