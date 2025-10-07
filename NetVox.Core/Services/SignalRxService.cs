@@ -155,7 +155,7 @@ namespace NetVox.Core.Services
                 }
                 else if (enc == 0x0005)
                 {
-                    // 8-bit PCM unsigned → convert to 16-bit signed little-endian and play
+                    // 8-bit linear PCM, **signed** → expand to 16-bit signed little-endian
                     var pcm8 = new byte[byteLen];
                     Buffer.BlockCopy(data, o, pcm8, 0, byteLen);
 
@@ -163,9 +163,8 @@ namespace NetVox.Core.Services
                     int w = 0;
                     for (int i = 0; i < pcm8.Length; i++)
                     {
-                        int u = pcm8[i];               // 0..255
-                        int s = (u - 128) << 8;        // -32768..+32767
-                        // little-endian: low byte first
+                        int s = (sbyte)pcm8[i]; // sign-extend
+                        s <<= 8;                // to 16-bit
                         pcm16[w++] = (byte)(s & 0xFF);
                         pcm16[w++] = (byte)((s >> 8) & 0xFF);
                     }
@@ -173,6 +172,7 @@ namespace NetVox.Core.Services
                     _playback.EnqueuePcm16(pcm16, 0, pcm16.Length);
                     PacketReceived?.Invoke(sampleRate);
                 }
+
                 else if (enc == 0x0001)
                 {
                     // μ-law → decode to 16-bit PCM little-endian and play

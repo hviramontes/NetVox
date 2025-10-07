@@ -129,20 +129,21 @@ namespace NetVox.Core.Services
                 }
                 else if (codec == CodecType.Pcm8)
                 {
-                    // Target is 8-bit UNSIGNED.
+                    // Target is 8-bit linear PCM, **signed** two’s complement (CNR expects zero-centered).
                     payload = new byte[frameSamples]; // one byte per sample
                     int si = 0;
                     for (int s = 0; s < frameSamples; s++)
                     {
                         short sample16 = (short)(src[si] | (src[si + 1] << 8)); // LE16
                         si += 2;
-                        int s8 = (sample16 >> 8) + 128; // [-32768..32767] -> [0..255]
-                        if (s8 < 0) s8 = 0;
-                        if (s8 > 255) s8 = 255;
-                        payload[s] = (byte)s8;
+
+                        // Keep the top 8 bits as **signed**. Two’s complement in a byte.
+                        sbyte s8 = (sbyte)(sample16 >> 8);
+                        payload[s] = unchecked((byte)s8);
                     }
-                    encodingScheme = ENCODING_SCHEME_PCM8_UNSIGNED;
+                    encodingScheme = ENCODING_SCHEME_PCM8_UNSIGNED; // still 0x0005 on the wire
                 }
+
                 else if (codec == CodecType.MuLaw)
                 {
                     // Target is G.711 µ-law, 8-bit. One byte per input sample.
@@ -219,25 +220,25 @@ namespace NetVox.Core.Services
 
         private static int PickFrameSamples(CodecType codec, int sampleRate)
         {
-            // μ-law: use ~20 ms frames (telephony-friendly), scale by sample rate.
+            // Match CNR-Sim packaging for 8-bit linear PCM: always 960 samples per PDU
+            if (codec == CodecType.Pcm8) return 960;
+
+            // μ-law: ~20 ms framing (telephony-friendly)
             if (codec == CodecType.MuLaw)
             {
-                if (sampleRate <= 8000) return 160;   // 20 ms @ 8 kHz
+                if (sampleRate <= 8000) return 160;  // 20 ms @ 8 kHz
                 if (sampleRate <= 16000) return 320;  // 20 ms @ 16 kHz
                 if (sampleRate <= 32000) return 640;  // 20 ms @ 32 kHz
-                return 960;                            // ~21.8 ms @ 44.1 kHz, matches our existing 44.1k framing vibe
+                return 960;                            // ~21.8 ms @ 44.1k/48k
             }
 
-            // Make 8-bit @ 44.1 kHz match CNR-Sim framing (960 samples ~21.8 ms)
-            if (codec == CodecType.Pcm8 && sampleRate >= 44100) return 960;
-
-            // Existing defaults (unchanged) for PCM16 and PCM8 at other rates:
-            // 80 for 8k, 160 for 16k, 320 for 32k, 480 for >= 44.1k
+            // PCM16 (unchanged): small, low-latency frames
             if (sampleRate <= 8000) return 80;
             if (sampleRate <= 16000) return 160;
             if (sampleRate <= 32000) return 320;
-            return 480;
+            return 480; // >= 44.1k
         }
+
 
 
         // Back-compat wrapper (only used if anything still calls the old signature)
