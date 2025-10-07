@@ -29,6 +29,8 @@ namespace NetVox.Core.Services
         // Encoding Scheme (IEEE 1278.1a “Encoding Class: Encoded Audio (0)” + Type)
         private const ushort ENCODING_SCHEME_PCM16_BE = 0x0004;      // 16-bit linear PCM, big-endian
         private const ushort ENCODING_SCHEME_PCM8_UNSIGNED = 0x0005; // 8-bit linear PCM, unsigned
+        private const ushort ENCODING_SCHEME_MULAW = 0x0001; // 8-bit µ-law (G.711)
+
 
         private const ushort TDL_TYPE_OTHER = 0;
 
@@ -128,17 +130,12 @@ namespace NetVox.Core.Services
                 else if (codec == CodecType.Pcm8)
                 {
                     // Target is 8-bit UNSIGNED.
-                    // Convert each 16-bit little-endian sample to 8-bit: (sample >> 8) + 128
-                    // This uses the top 8 bits and biases to unsigned range.
                     payload = new byte[frameSamples]; // one byte per sample
                     int si = 0;
                     for (int s = 0; s < frameSamples; s++)
                     {
-                        // read LE 16
-                        short sample16 = (short)(src[si] | (src[si + 1] << 8));
+                        short sample16 = (short)(src[si] | (src[si + 1] << 8)); // LE16
                         si += 2;
-
-                        // downscale to 8-bit unsigned
                         int s8 = (sample16 >> 8) + 128; // [-32768..32767] -> [0..255]
                         if (s8 < 0) s8 = 0;
                         if (s8 > 255) s8 = 255;
@@ -146,12 +143,19 @@ namespace NetVox.Core.Services
                     }
                     encodingScheme = ENCODING_SCHEME_PCM8_UNSIGNED;
                 }
+                else if (codec == CodecType.MuLaw)
+                {
+                    // Target is G.711 µ-law, 8-bit. One byte per input sample.
+                    payload = G711MuLaw.EncodeFromPcm16Le(src, 0, frameBytesSource);
+                    encodingScheme = ENCODING_SCHEME_MULAW;
+                }
                 else
                 {
-                    // Not implemented codecs (e.g., MuLaw) – skip sending to avoid bad wire format.
+                    // Not implemented codecs – skip sending to avoid bad wire format.
                     Log("[PDU] Skipped frame: codec not implemented on TX path.");
                     continue;
                 }
+
 
                 // Build Signal PDU with TARGET payload (payload length drives DataLength/NumSamples).
                 byte[] pdu = BuildSignalPdu(
@@ -215,16 +219,26 @@ namespace NetVox.Core.Services
 
         private static int PickFrameSamples(CodecType codec, int sampleRate)
         {
+            // μ-law: use ~20 ms frames (telephony-friendly), scale by sample rate.
+            if (codec == CodecType.MuLaw)
+            {
+                if (sampleRate <= 8000) return 160;   // 20 ms @ 8 kHz
+                if (sampleRate <= 16000) return 320;  // 20 ms @ 16 kHz
+                if (sampleRate <= 32000) return 640;  // 20 ms @ 32 kHz
+                return 960;                            // ~21.8 ms @ 44.1 kHz, matches our existing 44.1k framing vibe
+            }
+
             // Make 8-bit @ 44.1 kHz match CNR-Sim framing (960 samples ~21.8 ms)
             if (codec == CodecType.Pcm8 && sampleRate >= 44100) return 960;
 
-            // Otherwise keep our previous framing:
+            // Existing defaults (unchanged) for PCM16 and PCM8 at other rates:
             // 80 for 8k, 160 for 16k, 320 for 32k, 480 for >= 44.1k
             if (sampleRate <= 8000) return 80;
             if (sampleRate <= 16000) return 160;
             if (sampleRate <= 32000) return 320;
             return 480;
         }
+
 
         // Back-compat wrapper (only used if anything still calls the old signature)
         private static int PickFrameSamples(int sampleRate) => PickFrameSamples(CodecType.Pcm16, sampleRate);

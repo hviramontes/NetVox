@@ -12,7 +12,9 @@ namespace NetVox.Core.Services
     /// <summary>
     /// Minimal DIS Signal (Type 26) receiver that plays back:
     ///   - 16-bit PCM big-endian (encoding 0x0004)
-    ///   - 8-bit PCM unsigned (encoding 0x0005) [converted to 16-bit for playback]
+    ///   - 8-bit PCM unsigned (encoding 0x0005)
+    ///   - G.711 μ-law (encoding 0x0001)
+
     ///
     /// Joins multicast if DestinationIPAddress is multicast, otherwise listens on the configured port.
     /// </summary>
@@ -114,7 +116,7 @@ namespace NetVox.Core.Services
                 ushort enc = ReadBE16(data, o); // Encoding Scheme
                 o += 2;
 
-                o += 2;                           // TDL Type
+                o += 2;                              // TDL Type
                 int sampleRate = ReadBE32(data, o);  // Sample Rate
                 o += 4;
 
@@ -154,7 +156,6 @@ namespace NetVox.Core.Services
                 else if (enc == 0x0005)
                 {
                     // 8-bit PCM unsigned → convert to 16-bit signed little-endian and play
-                    // Mapping: 0..255 unsigned → -32768..+32767 signed (center 128 → 0)
                     var pcm8 = new byte[byteLen];
                     Buffer.BlockCopy(data, o, pcm8, 0, byteLen);
 
@@ -172,9 +173,20 @@ namespace NetVox.Core.Services
                     _playback.EnqueuePcm16(pcm16, 0, pcm16.Length);
                     PacketReceived?.Invoke(sampleRate);
                 }
+                else if (enc == 0x0001)
+                {
+                    // μ-law → decode to 16-bit PCM little-endian and play
+                    var mulaw = new byte[byteLen];
+                    Buffer.BlockCopy(data, o, mulaw, 0, byteLen);
+
+                    var pcm16 = G711MuLaw.DecodeToPcm16Le(mulaw, 0, mulaw.Length);
+                    _playback.EnqueuePcm16(pcm16, 0, pcm16.Length);
+                    PacketReceived?.Invoke(sampleRate);
+                }
+
                 else
                 {
-                    // Unknown/unsupported encoding; ignore quietly (e.g., μ-law/other until added)
+                    // Unknown/unsupported encoding; ignore quietly
                 }
             }
         }
