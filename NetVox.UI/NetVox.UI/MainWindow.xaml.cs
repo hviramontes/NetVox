@@ -11,6 +11,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading; // NEW
+using System.Linq;
+using System.Net;
+using System.Net.NetworkInformation;
+
 
 namespace NetVox.UI
 {
@@ -311,7 +315,7 @@ namespace NetVox.UI
 
         // ===== Start/Stop radio gating =====
 
-        private void StartRadio()
+        public void StartRadio()
         {
             _radioArmed = true;
             BtnStartRadio.IsEnabled = false;
@@ -430,10 +434,21 @@ namespace NetVox.UI
             // NEW: start RX listening on configured port/IP (joins multicast if needed)
             _rx.Start();
 
-            // Show radio window and hide main shell
-            _radioUi.Owner = this;
-            _radioUi.Show();
-            this.Hide();
+            // Show radio window; only set Owner/hide if MainWindow is actually visible
+            if (this.IsVisible)
+            {
+                _radioUi.Owner = this;
+                _radioUi.Show();
+                this.Hide();
+            }
+            else
+            {
+                // Easy Mode path: open Radio window standalone (no MainWindow flash)
+                _radioUi.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                _radioUi.ShowInTaskbar = true;
+                _radioUi.Show();
+            }
+
         }
 
         private void StopRadio()
@@ -769,6 +784,68 @@ namespace NetVox.UI
                 _pduService.Settings.FrequencyHz = (int)ch.FrequencyHz;
                 _pduService.Settings.BandwidthHz = ch.BandwidthHz;
             }
+        }
+
+        public void LaunchEasyMode(string? inputDeviceName = null, string? outputDeviceName = null)
+        {
+            // Ensure we have channels (Easy Mode expects a working list immediately)
+            if (!HasChannels())
+            {
+                _profile.Channels = BuildDefaultChannels();
+                _currentChannelIndex = 0;
+                try { SaveProfileToDisk(); } catch { /* ignore */ }
+            }
+
+            // Force easy defaults: 16-bit PCM @ 44.1 kHz
+            _pduService.Settings.Codec = CodecType.Pcm16;
+            _pduService.Settings.SampleRate = 44100;
+
+            // Auto-broadcast to x.x.x.255 based on the primary IPv4 (+ keep port sane)
+            var (_, broadcast) = TryGetPrimaryIpv4AndBroadcast();
+            _networkService.CurrentConfig ??= new NetworkConfig();
+            if (!string.IsNullOrWhiteSpace(broadcast))
+                _networkService.CurrentConfig.DestinationIPAddress = broadcast;
+            if (_networkService.CurrentConfig.DestinationPort <= 0)
+                _networkService.CurrentConfig.DestinationPort = 3000;
+
+            // (Optional) surface device picks for later plumbing — we log for now
+            System.Diagnostics.Debug.WriteLine($"[EasyMode] Output='{outputDeviceName ?? "Default"}', Input='{inputDeviceName ?? "Default"}'");
+
+            // Update status + jump straight into the radio UI
+            TxtStatus.Text = $"Easy Mode: 16-bit PCM @ 44.1k — broadcasting to {_networkService.CurrentConfig.DestinationIPAddress}";
+            StartRadio();
+        }
+
+        private (string? ip, string? broadcast) TryGetPrimaryIpv4AndBroadcast()
+        {
+            try
+            {
+                foreach (var nic in NetworkInterface.GetAllNetworkInterfaces()
+                         .Where(n => n.OperationalStatus == OperationalStatus.Up &&
+                                     (n.NetworkInterfaceType == NetworkInterfaceType.Ethernet ||
+                                      n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)))
+                {
+                    var uni = nic.GetIPProperties().UnicastAddresses
+                        .FirstOrDefault(u => u.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+                    if (uni == null) continue;
+
+                    var ipBytes = uni.Address.GetAddressBytes();
+                    var maskBytes = uni.IPv4Mask?.GetAddressBytes();
+
+                    if (maskBytes is { Length: 4 })
+                    {
+                        var bc = new byte[4];
+                        for (int i = 0; i < 4; i++)
+                            bc[i] = (byte)((ipBytes[i] & maskBytes[i]) | (~maskBytes[i]));
+                        return (uni.Address.ToString(), new IPAddress(bc).ToString());
+                    }
+
+                    // Fallback: assume /24 and use .255
+                    return (uni.Address.ToString(), $"{ipBytes[0]}.{ipBytes[1]}.{ipBytes[2]}.255");
+                }
+            }
+            catch { }
+            return (null, null);
         }
 
 
