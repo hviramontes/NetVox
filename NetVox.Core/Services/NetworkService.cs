@@ -28,6 +28,10 @@ namespace NetVox.Core.Services
             );
         }
 
+        // Preferred name used by PduService
+        public Task SendAsync(byte[] data) => SendBytesAsync(data);
+
+        // Legacy name kept for compatibility
         public async Task SendBytesAsync(byte[] data)
         {
             var cfg = CurrentConfig ?? throw new InvalidOperationException("Network configuration is missing.");

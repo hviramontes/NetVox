@@ -12,9 +12,8 @@ namespace NetVox.Core.Services
     /// <summary>
     /// Minimal DIS Signal (Type 26) receiver that plays back:
     ///   - 16-bit PCM big-endian (encoding 0x0004)
-    ///   - 8-bit PCM unsigned (encoding 0x0005)
+    ///   - 8-bit PCM (current app behavior)
     ///   - G.711 μ-law (encoding 0x0001)
-
     ///
     /// Joins multicast if DestinationIPAddress is multicast, otherwise listens on the configured port.
     /// </summary>
@@ -66,10 +65,32 @@ namespace NetVox.Core.Services
             // Port: your config calls it DestinationPort
             int port = cfg.DestinationPort > 0 ? cfg.DestinationPort : 3000;
 
+            // Create and bind receive socket (prefer specific local IP if configured)
             _udp = new UdpClient(AddressFamily.InterNetwork);
             _udp.EnableBroadcast = true;
+
+            // Allow multiple listeners on same port (handy for tooling)
             _udp.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            _udp.Client.Bind(new IPEndPoint(IPAddress.Any, port));
+
+            // Ignore ICMP “Port Unreachable” so Windows doesn’t surface 10054 on broadcast noise
+            try
+            {
+                const int SIO_UDP_CONNRESET = -1744830452; // 0x9800000C
+                _udp.Client.IOControl((IOControlCode)SIO_UDP_CONNRESET, new byte[] { 0, 0, 0, 0 }, null);
+            }
+            catch
+            {
+                // Not supported on some stacks; safe to ignore.
+            }
+
+            // Bind to the requested local IP if present, else 0.0.0.0
+            IPEndPoint bindEp;
+            if (!string.IsNullOrWhiteSpace(cfg.LocalIPAddress) && IPAddress.TryParse(cfg.LocalIPAddress, out var localBind))
+                bindEp = new IPEndPoint(localBind, port);
+            else
+                bindEp = new IPEndPoint(IPAddress.Any, port);
+
+            _udp.Client.Bind(bindEp);
 
             // Multicast join if the destination is multicast (prefer DestinationIPAddress; alias DestinationIP exists too)
             string destText = string.IsNullOrWhiteSpace(cfg.DestinationIPAddress) ? cfg.DestinationIP : cfg.DestinationIPAddress;
@@ -91,11 +112,25 @@ namespace NetVox.Core.Services
             while (!ct.IsCancellationRequested)
             {
                 UdpReceiveResult res;
-                try { res = await _udp.ReceiveAsync().ConfigureAwait(false); }
+                try
+                {
+                    res = await _udp.ReceiveAsync().ConfigureAwait(false);
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Socket closed during Stop(); exit quietly
+                    break;
+                }
+                catch (SocketException ex) when (IsIgnorableReceiveError(ex.SocketErrorCode) || ct.IsCancellationRequested)
+                {
+                    // Expected during shutdown or when the NIC flaps
+                    break;
+                }
                 catch
                 {
                     if (ct.IsCancellationRequested) break;
-                    else continue;
+                    // Transient weirdness; keep listening
+                    continue;
                 }
 
                 var data = res.Buffer;
@@ -155,7 +190,7 @@ namespace NetVox.Core.Services
                 }
                 else if (enc == 0x0005)
                 {
-                    // 8-bit linear PCM, **signed** → expand to 16-bit signed little-endian
+                    // 8-bit linear PCM (current behavior) → expand to 16-bit little-endian
                     var pcm8 = new byte[byteLen];
                     Buffer.BlockCopy(data, o, pcm8, 0, byteLen);
 
@@ -163,7 +198,7 @@ namespace NetVox.Core.Services
                     int w = 0;
                     for (int i = 0; i < pcm8.Length; i++)
                     {
-                        int s = (sbyte)pcm8[i]; // sign-extend
+                        int s = (sbyte)pcm8[i]; // sign-extend (intentional per your current path)
                         s <<= 8;                // to 16-bit
                         pcm16[w++] = (byte)(s & 0xFF);
                         pcm16[w++] = (byte)((s >> 8) & 0xFF);
@@ -172,7 +207,6 @@ namespace NetVox.Core.Services
                     _playback.EnqueuePcm16(pcm16, 0, pcm16.Length);
                     PacketReceived?.Invoke(sampleRate);
                 }
-
                 else if (enc == 0x0001)
                 {
                     // μ-law → decode to 16-bit PCM little-endian and play
@@ -183,7 +217,6 @@ namespace NetVox.Core.Services
                     _playback.EnqueuePcm16(pcm16, 0, pcm16.Length);
                     PacketReceived?.Invoke(sampleRate);
                 }
-
                 else
                 {
                     // Unknown/unsupported encoding; ignore quietly
@@ -202,6 +235,22 @@ namespace NetVox.Core.Services
 
         private static int ReadBE32(byte[] buf, int offset) =>
             (buf[offset] << 24) | (buf[offset + 1] << 16) | (buf[offset + 2] << 8) | buf[offset + 3];
+
+        private static bool IsIgnorableReceiveError(SocketError code)
+        {
+            switch (code)
+            {
+                case SocketError.Interrupted:          // operation interrupted
+                case SocketError.OperationAborted:     // canceled during shutdown
+                case SocketError.NetworkDown:
+                case SocketError.NetworkUnreachable:
+                case SocketError.HostUnreachable:
+                case SocketError.ConnectionReset:      // ICMP Port Unreachable on Windows
+                    return true;
+                default:
+                    return false;
+            }
+        }
 
         public void Dispose() => Stop();
     }

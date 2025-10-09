@@ -173,7 +173,7 @@ namespace NetVox.Core.Services
                     bytesPerSample: targetBytesPerSample // used to compute “Number of Samples”
                 );
 
-                await _network.SendAsync(pdu).ConfigureAwait(false);
+                await _network.SendBytesAsync(pdu).ConfigureAwait(false);
 
                 chunks++;
                 totalSentBytes += frameBytesSource; // we consumed this many SOURCE bytes
@@ -202,7 +202,7 @@ namespace NetVox.Core.Services
                 isTransmitting: isOn
             );
 
-            await _network.SendAsync(pdu).ConfigureAwait(false);
+            await _network.SendBytesAsync(pdu).ConfigureAwait(false);
 
             LogEvent?.Invoke($"[LOG] [PDU-25] Transmitter {(isOn ? "ON (Tx)" : "ON (Idle)")} sent, len={pdu.Length}");
         }

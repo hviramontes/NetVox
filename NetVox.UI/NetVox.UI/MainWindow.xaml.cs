@@ -15,7 +15,6 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 
-
 namespace NetVox.UI
 {
     public partial class MainWindow : Window
@@ -58,6 +57,8 @@ namespace NetVox.UI
         private FileSystemWatcher _keybindsWatcher;
         private string _basePath;
         private string _keybindsPath;
+
+        private AudioCaptureService _capture; // NEW: keep reference so we can set mic device
 
         public MainWindow()
         {
@@ -145,7 +146,6 @@ namespace NetVox.UI
                 }
             }
 
-
             // Initialize services
             _networkService = new NetworkService();
             // Apply persisted network settings from profile to live service
@@ -155,37 +155,41 @@ namespace NetVox.UI
             // Apply persisted DIS settings from profile to live PDU service
             _pduService.Settings = _profile.Dis ?? new PduSettings();
 
-            var audioCapture = new AudioCaptureService();
-            _radio = new RadioService(audioCapture, _pduService);
+            // Keep a field so we can set the input device by FriendlyName
+            _capture = new AudioCaptureService();
+            _radio = new RadioService(_capture, _pduService);
 
-            // NEW: create playback + RX listener
+            // Create playback + RX listener (playback can target an output device by FriendlyName)
             _playback = new AudioPlaybackService();
             _rx = new SignalRxService(_networkService, _playback);
 
             // NEW: blink RX banner when a Signal PDU arrives
             _rx.PacketReceived += sr =>
             {
-                Dispatcher.Invoke(() =>
+                Dispatcher.BeginInvoke(new Action(() =>
                 {
                     _radioUi?.SetReceiving(true);
                     _radioUi?.SetReceivingChannel(CurrentChannelDisplay());
                     _rxBlink.Stop();
                     _rxBlink.Start();
-                });
+                }));
+
             };
 
-            _pduService.LogEvent += msg => Dispatcher.Invoke(() =>
-                System.Diagnostics.Debug.WriteLine($"[LOG] {msg}"));
+            _pduService.LogEvent += msg => Dispatcher.BeginInvoke(new Action(() =>
+                System.Diagnostics.Debug.WriteLine($"[LOG] {msg}")));
 
-            _radio.TransmitStarted += (_, _) => Dispatcher.Invoke(() =>
-                System.Diagnostics.Debug.WriteLine("[PTT] Transmit Started"));
+
+            _radio.TransmitStarted += (_, _) => Dispatcher.BeginInvoke(new Action(() =>
+                System.Diagnostics.Debug.WriteLine("[PTT] Transmit Started")));
 
             _radio.TransmitStopped += async (_, _) =>
             {
                 // Flush any leftover audio so PDU staging buffer doesn’t keep 200–700 bytes hanging around
                 await _pduService.SendSignalPduAsync(Array.Empty<byte>());
-                Dispatcher.Invoke(() =>
-                    System.Diagnostics.Debug.WriteLine("[PTT] Transmit Stopped"));
+                Dispatcher.BeginInvoke(new Action(() =>
+                    System.Diagnostics.Debug.WriteLine("[PTT] Transmit Stopped")));
+
             };
 
             // Nav buttons
@@ -199,7 +203,6 @@ namespace NetVox.UI
 
                 MainContent.Content = _channelView;
             };
-
 
             BtnKeyboardSettings.Click += (_, _) =>
             {
@@ -448,7 +451,6 @@ namespace NetVox.UI
                 _radioUi.ShowInTaskbar = true;
                 _radioUi.Show();
             }
-
         }
 
         private void StopRadio()
@@ -544,11 +546,12 @@ namespace NetVox.UI
             {
                 _isMuted = !_isMuted;
 
-                Dispatcher.Invoke(() =>
+                Dispatcher.BeginInvoke(new Action(() =>
                 {
                     _radioUi?.SetMute(_isMuted);
                     TxtStatus.Text = _isMuted ? "MUTED" : ChannelStatus();
-                });
+                }));
+
 
                 return;
             }
@@ -610,21 +613,23 @@ namespace NetVox.UI
             {
                 if (_isMuted || !HasChannels())
                 {
-                    Dispatcher.Invoke(() =>
+                    Dispatcher.BeginInvoke(new Action(() =>
                     {
                         TxtStatus.Text = !HasChannels()
                             ? "Cannot transmit: No channel selected"
                             : "Cannot transmit: Muted";
-                    });
+                    }));
+
                     return;
                 }
 
-                Dispatcher.Invoke(() =>
+                Dispatcher.BeginInvoke(new Action(() =>
                 {
                     _radio.BeginTransmit();
                     _radioUi?.SetTransmitting(true);
                     TxtStatus.Text = "Transmitting...";
-                });
+                }));
+
             }
         }
 
@@ -636,12 +641,13 @@ namespace NetVox.UI
             if (!string.IsNullOrWhiteSpace(_pttKeyName) &&
                 key.ToString().Equals(_pttKeyName, StringComparison.OrdinalIgnoreCase))
             {
-                Dispatcher.Invoke(() =>
+                Dispatcher.BeginInvoke(new Action(() =>
                 {
                     _radio.EndTransmit();
                     _radioUi?.SetTransmitting(false);
                     TxtStatus.Text = _isMuted ? "MUTED" : ChannelStatus();
-                });
+                }));
+
             }
         }
 
@@ -800,19 +806,67 @@ namespace NetVox.UI
             _pduService.Settings.Codec = CodecType.Pcm16;
             _pduService.Settings.SampleRate = 44100;
 
-            // Auto-broadcast to x.x.x.255 based on the primary IPv4 (+ keep port sane)
-            var (_, broadcast) = TryGetPrimaryIpv4AndBroadcast();
+            // Easy Mode: pick a “just works” target by probing a couple of options.
+            // 1) Limited broadcast 255.255.255.255
+            // 2) Directed broadcast (computed) x.x.x.255
+            // 3) Fallback: unicast to the local default gateway (last-ditch)
+            var (localIp, directedBc) = TryGetPrimaryIpv4AndBroadcast();
             _networkService.CurrentConfig ??= new NetworkConfig();
-            if (!string.IsNullOrWhiteSpace(broadcast))
-                _networkService.CurrentConfig.DestinationIPAddress = broadcast;
+            _networkService.CurrentConfig.LocalIPAddress = localIp;
+
             if (_networkService.CurrentConfig.DestinationPort <= 0)
                 _networkService.CurrentConfig.DestinationPort = 3000;
+
+            string limitedBc = "255.255.255.255";
+            string? directed = string.IsNullOrWhiteSpace(directedBc) ? null : directedBc;
+            string? gateway = null;
+
+            try
+            {
+                foreach (var ni in NetworkInterface.GetAllNetworkInterfaces()
+                             .Where(n => n.OperationalStatus == OperationalStatus.Up))
+                {
+                    var ipProps = ni.GetIPProperties();
+                    var gw = ipProps.GatewayAddresses?.FirstOrDefault(g => g?.Address != null &&
+                                  g.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)?.Address;
+                    if (gw != null) { gateway = gw.ToString(); break; }
+                }
+            }
+            catch { /* ignore */ }
+
+            string chosen;
+            int port = _networkService.CurrentConfig.DestinationPort;
+
+            if (ProbeUdpTarget(localIp, limitedBc, port))
+            {
+                chosen = limitedBc;
+            }
+            else if (!string.IsNullOrWhiteSpace(directed) && ProbeUdpTarget(localIp, directed, port))
+            {
+                chosen = directed;
+            }
+            else if (!string.IsNullOrWhiteSpace(gateway) && ProbeUdpTarget(localIp, gateway, port))
+            {
+                chosen = gateway;
+            }
+            else
+            {
+                chosen = !string.IsNullOrWhiteSpace(directed) ? directed : limitedBc;
+            }
+
+            _networkService.CurrentConfig.DestinationIPAddress = chosen;
 
             // (Optional) surface device picks for later plumbing — we log for now
             System.Diagnostics.Debug.WriteLine($"[EasyMode] Output='{outputDeviceName ?? "Default"}', Input='{inputDeviceName ?? "Default"}'");
 
+            // Apply selected devices (null/empty picks default)
+            (_playback as AudioPlaybackService)?.SetOutputDeviceByName(outputDeviceName);
+            _capture.SetInputDeviceByName(inputDeviceName);
+
             // Update status + jump straight into the radio UI
-            TxtStatus.Text = $"Easy Mode: 16-bit PCM @ 44.1k — broadcasting to {_networkService.CurrentConfig.DestinationIPAddress}";
+            TxtStatus.Text =
+                $"Easy Mode: 16-bit PCM @ 44.1k — TX {(_networkService.CurrentConfig.LocalIPAddress ?? "0.0.0.0")} → " +
+                $"{_networkService.CurrentConfig.DestinationIPAddress}:{_networkService.CurrentConfig.DestinationPort}";
             StartRadio();
         }
 
@@ -848,6 +902,29 @@ namespace NetVox.UI
             return (null, null);
         }
 
+        // Quick, non-blocking UDP probe used by Easy Mode to choose a sane broadcast/unicast target.
+        // Returns true if a tiny datagram send does not throw synchronously.
+        private static bool ProbeUdpTarget(string? localIp, string targetIp, int port)
+        {
+            try
+            {
+                using var udp = string.IsNullOrWhiteSpace(localIp)
+                    ? new System.Net.Sockets.UdpClient(System.Net.Sockets.AddressFamily.InterNetwork)
+                    : new System.Net.Sockets.UdpClient(new System.Net.IPEndPoint(System.Net.IPAddress.Parse(localIp), 0));
+
+                try { udp.Client.SetSocketOption(System.Net.Sockets.SocketOptionLevel.Socket, System.Net.Sockets.SocketOptionName.ReuseAddress, true); } catch { }
+                try { udp.EnableBroadcast = true; } catch { }
+
+                var dest = new System.Net.IPEndPoint(System.Net.IPAddress.Parse(targetIp), port);
+                var oneByte = new byte[1] { 0x00 };
+                udp.Send(oneByte, oneByte.Length, dest);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         protected override void OnClosed(EventArgs e)
         {
@@ -889,6 +966,8 @@ namespace NetVox.UI
             try { _rx?.Stop(); } catch { }
             try { (_rx as IDisposable)?.Dispose(); } catch { }
             try { _playback?.Dispose(); } catch { }
+            try { _capture?.Dispose(); } catch { }
+
 
             // Stop blink timer
             try { _rxBlink?.Stop(); } catch { }

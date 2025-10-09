@@ -17,8 +17,13 @@ namespace NetVox.Core.Interfaces
         NetworkConfig CurrentConfig { get; set; }
 
         /// <summary>
-        /// Sends raw PDU bytes over UDP.
+        /// Sends raw PDU bytes over UDP. (Legacy name)
         /// </summary>
         Task SendBytesAsync(byte[] data);
+
+        /// <summary>
+        /// Sends raw PDU bytes over UDP. (Preferred name)
+        /// </summary>
+        Task SendAsync(byte[] data);
     }
 }
