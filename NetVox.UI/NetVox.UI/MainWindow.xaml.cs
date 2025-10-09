@@ -162,6 +162,8 @@ namespace NetVox.UI
             // Create playback + RX listener (playback can target an output device by FriendlyName)
             _playback = new AudioPlaybackService();
             _rx = new SignalRxService(_networkService, _playback);
+            (_playback as AudioPlaybackService)?.SetJitterMs(120); // target ~120ms RX jitter
+
 
             // NEW: blink RX banner when a Signal PDU arrives
             _rx.PacketReceived += sr =>

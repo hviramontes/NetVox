@@ -7,8 +7,8 @@ namespace NetVox.Core.Services
 {
     /// <summary>
     /// PCM16 mono playback using a BufferedWaveProvider into a WASAPI output device.
-    /// Supports selecting the output device by MMDevice.FriendlyName, with WaveOutEvent fallback.
-    /// Tuned for low-latency comms.
+    /// Supports selecting the output device by MMDevice.FriendlyName.
+    /// Adds a controllable jitter buffer for smoothing RX.
     /// </summary>
     public sealed class AudioPlaybackService : IDisposable, NetVox.Core.Interfaces.IAudioPlaybackService
     {
@@ -18,18 +18,43 @@ namespace NetVox.Core.Services
         private int _sampleRate;
         private string? _pendingDeviceFriendlyName;      // stored until init
 
+        // Jitter control (in milliseconds)
+        // _jitterMs is the target queued-audio we try to hover around; we drop backlog beyond a margin.
+        private int _jitterMs = 120;                     // default if caller never sets it
+        private const int MinJitterMs = 40;
+        private const int MaxJitterMs = 1000;
+
         /// <summary>
-        /// Select the output device by FriendlyName. Pass null/empty to use the default device.
+        /// Selects the output device by FriendlyName. Pass null/empty to use the default device.
         /// Call before audio starts (or we’ll re-init on next EnsureFormat).
         /// </summary>
         public void SetOutputDeviceByName(string? friendlyName)
         {
             _pendingDeviceFriendlyName = string.IsNullOrWhiteSpace(friendlyName) ? null : friendlyName;
-            // If we’re already initialized, re-init with the current sample rate
+            // If we’re already initialized, re-init on next EnsureFormat with the same sample rate
             if (_buffer != null)
             {
                 var sr = _sampleRate > 0 ? _sampleRate : 8000;
                 Reinit(sr);
+            }
+        }
+
+        /// <summary>
+        /// Configure desired jitter buffer size in milliseconds (clamped 40..1000).
+        /// This influences the BufferedWaveProvider.BufferDuration and backlog trimming thresholds.
+        /// </summary>
+        public void SetJitterMs(int ms)
+        {
+            if (ms < MinJitterMs) ms = MinJitterMs;
+            if (ms > MaxJitterMs) ms = MaxJitterMs;
+            _jitterMs = ms;
+
+            // If already initialized, apply immediately.
+            if (_buffer != null)
+            {
+                _buffer.BufferDuration = ComputeBufferDuration(_jitterMs);
+                // Optionally trim excess if we’re far above new target
+                TryTrimBacklog();
             }
         }
 
@@ -58,8 +83,8 @@ namespace NetVox.Core.Services
             _buffer = new BufferedWaveProvider(format)
             {
                 DiscardOnBufferOverflow = true,
-                BufferDuration = TimeSpan.FromMilliseconds(150),
-                ReadFully = false
+                ReadFully = false,
+                BufferDuration = ComputeBufferDuration(_jitterMs)
             };
 
             // Try chain: WasapiOut(on device) → WasapiOut(default) → WaveOutEvent
@@ -67,15 +92,25 @@ namespace NetVox.Core.Services
                    TryCreateWasapiOut(null) ??
                    TryCreateWaveOutEvent();
 
-            if (_out == null) return; // no viable output path; fail inert, keep UI alive
             _out.Init(_buffer);
             _out.Play();
+        }
+
+        private static TimeSpan ComputeBufferDuration(int jitterMs)
+        {
+            // Keep some headroom above desired jitter to prevent constant underflow.
+            // e.g., jitter=120ms → buffer ≈ 240ms (capped).
+            int dur = jitterMs * 2;
+            if (dur < 80) dur = 80;
+            if (dur > 1000) dur = 1000;
+            return TimeSpan.FromMilliseconds(dur);
         }
 
         private static IWavePlayer? TryCreateWasapiOut(MMDevice? device)
         {
             try
             {
+                // Event-driven, low-latency
                 if (device != null)
                     return new WasapiOut(device, AudioClientShareMode.Shared, true, 60);
                 return new WasapiOut(AudioClientShareMode.Shared, true, 60);
@@ -106,25 +141,34 @@ namespace NetVox.Core.Services
             if (buffer == null || count <= 0) return;
             if (_buffer == null) EnsureFormat(_sampleRate > 0 ? _sampleRate : 8000);
 
-            // Drop backlog if queued audio exceeds ~220 ms to keep UI and PTT snappy
             var avgBps = _buffer!.WaveFormat.AverageBytesPerSecond;
             if (avgBps > 0)
             {
+                // Current queued audio in ms
                 var bufferedMs = (int)(_buffer.BufferedBytes * 1000L / avgBps);
-                if (bufferedMs > 220)
-                    _buffer.ClearBuffer(); // prefer low-latency over glitch-free backlog
 
-                // Prevent single writes larger than ~120 ms from ballooning the queue
-                var maxBytesPerWrite = (int)(avgBps * 0.12); // ≈120 ms
+                // Trim policy:
+                // - If we exceed jitter target by a margin, drop the backlog (keep most recent)
+                // - Also trim single giant writes to ~75% of jitter to avoid ballooning queue
+                int dropThreshold = _jitterMs + 100; // margin above desired jitter
+                if (bufferedMs > dropThreshold)
+                {
+                    _buffer.ClearBuffer();
+                }
+
+                int maxWriteMs = (int)(_jitterMs * 0.75);
+                if (maxWriteMs < 20) maxWriteMs = 20;
+                int maxBytesPerWrite = (int)((long)avgBps * maxWriteMs / 1000L);
                 if (maxBytesPerWrite > 0 && count > maxBytesPerWrite)
                 {
-                    // keep the most recent tail; older audio is useless for comms
-                    offset = offset + (count - maxBytesPerWrite);
+                    // Keep the latest tail; older audio would only add delay.
+                    int skip = count - maxBytesPerWrite;
+                    offset += skip;
                     count = maxBytesPerWrite;
                 }
             }
 
-            _buffer.AddSamples(buffer, offset, count);
+            _buffer!.AddSamples(buffer, offset, count);
         }
 
         public void Start() => _out?.Play();
@@ -142,6 +186,20 @@ namespace NetVox.Core.Services
 
         public void Dispose() => Stop();
 
+        private void TryTrimBacklog()
+        {
+            if (_buffer == null) return;
+            var avgBps = _buffer.WaveFormat.AverageBytesPerSecond;
+            if (avgBps <= 0) return;
+
+            int bufferedMs = (int)(_buffer.BufferedBytes * 1000L / avgBps);
+            int dropThreshold = _jitterMs + 100;
+            if (bufferedMs > dropThreshold)
+            {
+                _buffer.ClearBuffer();
+            }
+        }
+
         private static MMDevice? ResolveDevice(string? friendlyName)
         {
             try
@@ -154,17 +212,18 @@ namespace NetVox.Core.Services
                     foreach (var d in mm.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active))
                     {
                         if (string.Equals(d.FriendlyName, friendlyName, StringComparison.OrdinalIgnoreCase))
-                            return d; // ownership transfers; do not dispose here
+                            return d;
                         d.Dispose();
                     }
                 }
 
                 // Fallback to default multimedia render device
-                return mm.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+                var def = mm.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+                return def;
             }
             catch
             {
-                // Nothing we can do; returning null lets WasapiOut(no device) pick system default.
+                // Nothing we can do; return null and let WasapiOut(no device) use system default selection.
                 return null;
             }
         }
