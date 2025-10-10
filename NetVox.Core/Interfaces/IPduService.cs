@@ -17,6 +17,9 @@ namespace NetVox.Core.Interfaces
         /// <summary>Raised for diagnostic logging.</summary>
         event Action<string>? LogEvent;
 
+        /// <summary>Raised when a send/build error occurs; UI can surface it as a non-blocking notification.</summary>
+        event Action<string>? ErrorOccurred;
+
         /// <summary>
         /// Append an audio chunk to the TX hold buffer and emit one or more Signal PDUs as needed.
         /// The chunk format must match <see cref="PduSettings.Codec"/> and <see cref="PduSettings.SampleRate"/>.

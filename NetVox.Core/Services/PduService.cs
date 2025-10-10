@@ -13,6 +13,8 @@ namespace NetVox.Core.Services
         public PduSettings Settings { get; set; } = new PduSettings();
 
         public event Action<string>? LogEvent;
+        public event Action<string>? ErrorOccurred;
+
 
         // --- TX hold (leftover capture bytes that don't fill a full PDU frame yet).
         // NOTE: This buffer always stores SOURCE audio from the mic: 16-bit PCM little-endian.
@@ -172,8 +174,18 @@ namespace NetVox.Core.Services
                     audioPayload: payload,
                     bytesPerSample: targetBytesPerSample // used to compute “Number of Samples”
                 );
-
                 await _network.SendBytesAsync(pdu).ConfigureAwait(false);
+
+                try
+                {
+                    await _network.SendBytesAsync(pdu).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    ErrorOccurred?.Invoke($"Network send failed: {ex.Message}");
+                    // Bail out of this send loop to avoid spamming on persistent failure.
+                    break;
+                }
 
                 chunks++;
                 totalSentBytes += frameBytesSource; // we consumed this many SOURCE bytes
@@ -202,7 +214,15 @@ namespace NetVox.Core.Services
                 isTransmitting: isOn
             );
 
-            await _network.SendBytesAsync(pdu).ConfigureAwait(false);
+            try
+            {
+                await _network.SendBytesAsync(pdu).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                ErrorOccurred?.Invoke($"Network send failed: {ex.Message}");
+                return;
+            }
 
             LogEvent?.Invoke($"[LOG] [PDU-25] Transmitter {(isOn ? "ON (Tx)" : "ON (Idle)")} sent, len={pdu.Length}");
         }

@@ -67,9 +67,6 @@ namespace NetVox.UI
 
             // Register the top-right toast host so NotificationService.Show(...) works anywhere in UI
             NotificationService.RegisterHost(MainToast);
-            NotificationService.Show("Notifications ready", Controls.ToastKind.Info);
-
-
 
             // NEW: initialize RX blink timer (180 ms pulse)
             _rxBlink = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(180) };
@@ -162,6 +159,11 @@ namespace NetVox.UI
             // Apply persisted DIS settings from profile to live PDU service
             _pduService.Settings = _profile.Dis ?? new PduSettings();
 
+            _pduService.ErrorOccurred += msg =>
+            {
+                NotificationService.Show(msg, Controls.ToastKind.Error);
+            };
+
             // Keep a field so we can set the input device by FriendlyName
             _capture = new AudioCaptureService();
             _radio = new RadioService(_capture, _pduService);
@@ -182,6 +184,12 @@ namespace NetVox.UI
                 }));
 
             };
+
+            _rx.ErrorOccurred += msg =>
+            {
+                NotificationService.Show(msg, Controls.ToastKind.Error);
+            };
+
 
             _pduService.LogEvent += msg => Dispatcher.BeginInvoke(new Action(() =>
                 System.Diagnostics.Debug.WriteLine($"[LOG] {msg}")));

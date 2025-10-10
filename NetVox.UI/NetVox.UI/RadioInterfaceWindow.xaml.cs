@@ -26,7 +26,6 @@ namespace NetVox.UI
             InitializeComponent();
 
             NotificationService.RegisterHost(RadioToast);
-            NotificationService.Show("Radio UI notifications ready", Controls.ToastKind.Info);
 
 
             // Wire UI -> events

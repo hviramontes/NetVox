@@ -28,6 +28,8 @@ namespace NetVox.Core.Services
 
         // Fires once per Signal PDU (argument = sampleRate). Used by UI to blink RX.
         public event Action<int>? PacketReceived;
+        // Fires when the receive socket fails to bind/join or hits a hard error.
+        public event Action<string>? ErrorOccurred;
 
         public SignalRxService(INetworkService net, IAudioPlaybackService playback)
         {
@@ -66,47 +68,57 @@ namespace NetVox.Core.Services
             int port = cfg.DestinationPort > 0 ? cfg.DestinationPort : 3000;
 
             // Create and bind receive socket (prefer specific local IP if configured)
-            _udp = new UdpClient(AddressFamily.InterNetwork);
-            _udp.EnableBroadcast = true;
-
-            // Allow multiple listeners on same port (handy for tooling)
-            _udp.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-
-            // Ignore ICMP “Port Unreachable” so Windows doesn’t surface 10054 on broadcast noise
             try
             {
-                const int SIO_UDP_CONNRESET = -1744830452; // 0x9800000C
-                _udp.Client.IOControl((IOControlCode)SIO_UDP_CONNRESET, new byte[] { 0, 0, 0, 0 }, null);
+                _udp = new UdpClient(AddressFamily.InterNetwork);
+                _udp.EnableBroadcast = true;
+
+                // Allow multiple listeners on same port (handy for tooling)
+                _udp.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+
+                // Ignore ICMP “Port Unreachable” so Windows doesn’t surface 10054 on broadcast noise
+                try
+                {
+                    const int SIO_UDP_CONNRESET = -1744830452; // 0x9800000C
+                    _udp.Client.IOControl((IOControlCode)SIO_UDP_CONNRESET, new byte[] { 0, 0, 0, 0 }, null);
+                }
+                catch { /* safe to ignore */ }
+
+                // Bind to the requested local IP if present, else 0.0.0.0
+                IPEndPoint bindEp;
+                if (!string.IsNullOrWhiteSpace(cfg.LocalIPAddress) && IPAddress.TryParse(cfg.LocalIPAddress, out var localBind))
+                    bindEp = new IPEndPoint(localBind, port);
+                else
+                    bindEp = new IPEndPoint(IPAddress.Any, port);
+
+                _udp.Client.Bind(bindEp);
             }
-            catch
+            catch (Exception ex)
             {
-                // Not supported on some stacks; safe to ignore.
+                ErrorOccurred?.Invoke($"UDP listen failed on port {port}: {ex.Message}");
+                return; // cannot receive, so exit the loop task
             }
 
-            // Bind to the requested local IP if present, else 0.0.0.0
-            IPEndPoint bindEp;
-            if (!string.IsNullOrWhiteSpace(cfg.LocalIPAddress) && IPAddress.TryParse(cfg.LocalIPAddress, out var localBind))
-                bindEp = new IPEndPoint(localBind, port);
-            else
-                bindEp = new IPEndPoint(IPAddress.Any, port);
-
-            _udp.Client.Bind(bindEp);
 
             // Multicast join if the destination is multicast (prefer DestinationIPAddress; alias DestinationIP exists too)
             string destText = string.IsNullOrWhiteSpace(cfg.DestinationIPAddress) ? cfg.DestinationIP : cfg.DestinationIPAddress;
             if (IPAddress.TryParse(destText, out var dest) && IsMulticast(dest))
             {
+                IPAddress local = IPAddress.Any;
                 try
                 {
-                    IPAddress local = IPAddress.Any;
                     if (!string.IsNullOrWhiteSpace(cfg.LocalIPAddress) && IPAddress.TryParse(cfg.LocalIPAddress, out var lb))
                         local = lb;
+
                     _udp.JoinMulticastGroup(dest, local);
                 }
-                catch
+                catch (Exception ex)
                 {
                     // If join fails, we still receive unicast/broadcast just fine.
+                    ErrorOccurred?.Invoke($"Multicast join failed for {dest} on {local}: {ex.Message}");
                 }
+
+
             }
 
             while (!ct.IsCancellationRequested)
@@ -126,12 +138,13 @@ namespace NetVox.Core.Services
                     // Expected during shutdown or when the NIC flaps
                     break;
                 }
-                catch
+                catch (Exception ex)
                 {
                     if (ct.IsCancellationRequested) break;
-                    // Transient weirdness; keep listening
+                    ErrorOccurred?.Invoke($"UDP receive error: {ex.Message}");
                     continue;
                 }
+
 
                 var data = res.Buffer;
                 if (data == null || data.Length < 34) continue;
