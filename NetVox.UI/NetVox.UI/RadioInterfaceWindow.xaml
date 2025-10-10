@@ -1,6 +1,7 @@
 ﻿<Window x:Class="NetVox.UI.RadioInterfaceWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:NetVox.UI.Controls"
         Title="NetVox Radio"
         Height="220" Width="520"
         ResizeMode="NoResize"
@@ -169,5 +170,10 @@
                     ToolTip="Stop radio and return to main window"
                     Cursor="Hand"/>
         </Grid>
+
+        <!-- Toast overlay -->
+        <controls:ToastHost x:Name="RadioToast"
+                            Grid.RowSpan="3"
+                            Grid.ColumnSpan="2"/>
     </Grid>
 </Window>

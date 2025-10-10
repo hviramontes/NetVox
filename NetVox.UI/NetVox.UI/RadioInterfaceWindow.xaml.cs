@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
+using NetVox.UI.Services; // NotificationService
 
 namespace NetVox.UI
 {
@@ -23,6 +24,10 @@ namespace NetVox.UI
         public RadioInterfaceWindow()
         {
             InitializeComponent();
+
+            NotificationService.RegisterHost(RadioToast);
+            NotificationService.Show("Radio UI notifications ready", Controls.ToastKind.Info);
+
 
             // Wire UI -> events
             BtnTransmit.PreviewMouseLeftButtonDown += (_, __) =>

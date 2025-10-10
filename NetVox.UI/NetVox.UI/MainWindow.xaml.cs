@@ -4,6 +4,7 @@ using NetVox.Core.Models;
 using NetVox.Core.Services;
 using NetVox.Persistence.Repositories;
 using NetVox.UI.Views;
+using NetVox.UI.Services; // for NotificationService
 using System;
 using System.IO;
 using System.Text.Json;
@@ -63,6 +64,12 @@ namespace NetVox.UI
         public MainWindow()
         {
             InitializeComponent();
+
+            // Register the top-right toast host so NotificationService.Show(...) works anywhere in UI
+            NotificationService.RegisterHost(MainToast);
+            NotificationService.Show("Notifications ready", Controls.ToastKind.Info);
+
+
 
             // NEW: initialize RX blink timer (180 ms pulse)
             _rxBlink = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(180) };
@@ -178,7 +185,6 @@ namespace NetVox.UI
 
             _pduService.LogEvent += msg => Dispatcher.BeginInvoke(new Action(() =>
                 System.Diagnostics.Debug.WriteLine($"[LOG] {msg}")));
-
 
             _radio.TransmitStarted += (_, _) => Dispatcher.BeginInvoke(new Action(() =>
                 System.Diagnostics.Debug.WriteLine("[PTT] Transmit Started")));
