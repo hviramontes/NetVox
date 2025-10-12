@@ -14,5 +14,11 @@ namespace NetVox.Core.Models
 
         /// <summary>Persisted DIS/PDU settings (version, codec, etc.).</summary>
         public PduSettings Dis { get; set; } = new();
+
+        /// <summary>When true, include verbose diagnostic lines in logs.</summary>
+        public bool VerboseLogging { get; set; } = false;
+
+        /// <summary>How many days of log files to keep in Documents\NetVox\logs.</summary>
+        public int LogRetentionDays { get; set; } = 10;
     }
 }

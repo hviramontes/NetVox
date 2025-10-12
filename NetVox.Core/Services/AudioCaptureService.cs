@@ -22,6 +22,9 @@ namespace NetVox.Core.Services
         /// </summary>
         public event Action<byte[], int>? BytesCaptured;
 
+        /// <summary>Raised when the capture device cannot initialize or stops with an error.</summary>
+        public event Action<string>? ErrorOccurred;
+
         /// <summary>Current sample rate in Hz (valid after Start).</summary>
         public int CurrentSampleRate => _sampleRate;
 
@@ -56,18 +59,41 @@ namespace NetVox.Core.Services
             // Resolve desired capture device (default if not found)
             _device = ResolveDevice(_pendingDeviceFriendlyName);
 
-            // Try chain: WasapiCapture(on device) → WasapiCapture(default) → WaveInEvent
+            // Try chain: WasapiCapture(on device) → WasapiCapture(default) → WaveInEvent(safe)
             _capture = TryCreateWasapiCapture(_device) ??
                        TryCreateWasapiCapture(null) ??
-                       TryCreateWaveInEvent(_sampleRate);
+                       TryCreateWaveInEvent(_sampleRate, safe: true);
+
+            if (_capture == null)
+            {
+                ErrorOccurred?.Invoke("Microphone not available or driver failed to initialize.");
+                _isStarted = false;
+                return;
+            }
 
             _capture.WaveFormat = new WaveFormat(_sampleRate, 16, 1);
 
             _capture.DataAvailable += OnDataAvailable;
             _capture.RecordingStopped += OnRecordingStopped;
 
-            _capture.StartRecording();
-            _isStarted = true;
+            try
+            {
+                _capture.StartRecording();
+                _isStarted = true;
+            }
+            catch (Exception ex)
+            {
+                ErrorOccurred?.Invoke($"Microphone start failed: {ex.Message}");
+                try
+                {
+                    _capture.DataAvailable -= OnDataAvailable;
+                    _capture.RecordingStopped -= OnRecordingStopped;
+                    _capture.Dispose();
+                }
+                catch { /* ignored */ }
+                _capture = null;
+                _isStarted = false;
+            }
         }
 
         private static WasapiCapture? TryCreateWasapiCapture(MMDevice? device)
@@ -100,7 +126,6 @@ namespace NetVox.Core.Services
             try { return TryCreateWaveInEvent(sampleRate); }
             catch { return null; }
         }
-
 
         /// <summary>Stop capturing.</summary>
         public void Stop()
@@ -139,6 +164,12 @@ namespace NetVox.Core.Services
 
         private void OnRecordingStopped(object? sender, StoppedEventArgs e)
         {
+            // Bubble up the driver exception if present
+            if (e?.Exception != null)
+            {
+                ErrorOccurred?.Invoke($"Microphone stopped: {e.Exception.Message}");
+            }
+
             // Ensure full teardown
             Stop();
         }

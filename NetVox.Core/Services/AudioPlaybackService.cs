@@ -1,4 +1,4 @@
-﻿// NetVox.Core/Services/AudioPlaybackService.cs
+﻿// File: NetVox.Core/Services/AudioPlaybackService.cs
 using System;
 using NAudio.Wave;
 using NAudio.CoreAudioApi;
@@ -17,6 +17,9 @@ namespace NetVox.Core.Services
         private BufferedWaveProvider? _buffer;           // PCM16 LE mono buffer
         private int _sampleRate;
         private string? _pendingDeviceFriendlyName;      // stored until init
+
+        /// <summary>Raised when the output device cannot initialize or playback fails.</summary>
+        public event Action<string>? ErrorOccurred;
 
         /// <summary>
         /// Select the output device by FriendlyName. Pass null/empty to use the default device.
@@ -67,9 +70,23 @@ namespace NetVox.Core.Services
                    TryCreateWasapiOut(null) ??
                    TryCreateWaveOutEvent();
 
-            if (_out == null) return; // no viable output path; fail inert, keep UI alive
-            _out.Init(_buffer);
-            _out.Play();
+            if (_out == null)
+            {
+                ErrorOccurred?.Invoke("Speaker not available or driver failed to initialize.");
+                return; // no viable output path; fail inert, keep UI alive
+            }
+
+            try
+            {
+                _out.Init(_buffer);
+                _out.Play();
+            }
+            catch (Exception ex)
+            {
+                ErrorOccurred?.Invoke($"Speaker start failed: {ex.Message}");
+                try { _out.Dispose(); } catch { }
+                _out = null;
+            }
         }
 
         private static IWavePlayer? TryCreateWasapiOut(MMDevice? device)
@@ -105,9 +122,14 @@ namespace NetVox.Core.Services
         {
             if (buffer == null || count <= 0) return;
             if (_buffer == null) EnsureFormat(_sampleRate > 0 ? _sampleRate : 8000);
+            if (_buffer == null)
+            {
+                ErrorOccurred?.Invoke("Speaker buffer not initialized.");
+                return;
+            }
 
             // Drop backlog if queued audio exceeds ~220 ms to keep UI and PTT snappy
-            var avgBps = _buffer!.WaveFormat.AverageBytesPerSecond;
+            var avgBps = _buffer.WaveFormat.AverageBytesPerSecond;
             if (avgBps > 0)
             {
                 var bufferedMs = (int)(_buffer.BufferedBytes * 1000L / avgBps);

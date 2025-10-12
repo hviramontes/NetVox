@@ -12,23 +12,26 @@ namespace NetVox.Core.Services
     /// <summary>
     /// Minimal DIS Signal (Type 26) receiver that plays back:
     ///   - 16-bit PCM big-endian (encoding 0x0004)
-    ///   - 8-bit PCM (current app behavior)
+    ///   - 8-bit linear PCM (encoding 0x0005)
     ///   - G.711 μ-law (encoding 0x0001)
     ///
     /// Joins multicast if DestinationIPAddress is multicast, otherwise listens on the configured port.
+    /// Raises ErrorOccurred on bind/join/receive errors so UI can show toasts.
     /// </summary>
     public sealed class SignalRxService : IDisposable
     {
         private readonly INetworkService _net;
         private readonly IAudioPlaybackService _playback;
+
         private UdpClient? _udp;
         private CancellationTokenSource? _cts;
         private Task? _loopTask;
         private readonly object _gate = new();
 
-        // Fires once per Signal PDU (argument = sampleRate). Used by UI to blink RX.
+        /// <summary>Fires once per Signal PDU (argument = sampleRate). Used by UI to blink RX.</summary>
         public event Action<int>? PacketReceived;
-        // Fires when the receive socket fails to bind/join or hits a hard error.
+
+        /// <summary>Fires when the receive socket fails to bind/join or hits a hard error.</summary>
         public event Action<string>? ErrorOccurred;
 
         public SignalRxService(INetworkService net, IAudioPlaybackService playback)
@@ -64,7 +67,7 @@ namespace NetVox.Core.Services
         {
             var cfg = _net.CurrentConfig ?? new NetworkConfig();
 
-            // Port: your config calls it DestinationPort
+            // Port: your config calls it DestinationPort (default 3000)
             int port = cfg.DestinationPort > 0 ? cfg.DestinationPort : 3000;
 
             // Create and bind receive socket (prefer specific local IP if configured)
@@ -76,7 +79,7 @@ namespace NetVox.Core.Services
                 // Allow multiple listeners on same port (handy for tooling)
                 _udp.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
-                // Ignore ICMP “Port Unreachable” so Windows doesn’t surface 10054 on broadcast noise
+                // Ignore ICMP “Port Unreachable” (10054) on broadcast/multicast noise (Windows)
                 try
                 {
                     const int SIO_UDP_CONNRESET = -1744830452; // 0x9800000C
@@ -95,10 +98,9 @@ namespace NetVox.Core.Services
             }
             catch (Exception ex)
             {
-                ErrorOccurred?.Invoke($"UDP listen failed on port {port}: {ex.Message}");
-                return; // cannot receive, so exit the loop task
+                ErrorOccurred?.Invoke($"Network receive bind failed on port {port}: {ex.Message}");
+                return; // cannot receive, so exit
             }
-
 
             // Multicast join if the destination is multicast (prefer DestinationIPAddress; alias DestinationIP exists too)
             string destText = string.IsNullOrWhiteSpace(cfg.DestinationIPAddress) ? cfg.DestinationIP : cfg.DestinationIPAddress;
@@ -114,11 +116,9 @@ namespace NetVox.Core.Services
                 }
                 catch (Exception ex)
                 {
-                    // If join fails, we still receive unicast/broadcast just fine.
+                    // Continue anyway; unicast/broadcast may still work.
                     ErrorOccurred?.Invoke($"Multicast join failed for {dest} on {local}: {ex.Message}");
                 }
-
-
             }
 
             while (!ct.IsCancellationRequested)
@@ -138,13 +138,18 @@ namespace NetVox.Core.Services
                     // Expected during shutdown or when the NIC flaps
                     break;
                 }
+                catch (SocketException ex)
+                {
+                    if (ct.IsCancellationRequested) break;
+                    ErrorOccurred?.Invoke($"Network receive error: {ex.Message}");
+                    continue;
+                }
                 catch (Exception ex)
                 {
                     if (ct.IsCancellationRequested) break;
-                    ErrorOccurred?.Invoke($"UDP receive error: {ex.Message}");
+                    ErrorOccurred?.Invoke($"Network receive error: {ex.Message}");
                     continue;
                 }
-
 
                 var data = res.Buffer;
                 if (data == null || data.Length < 34) continue;
@@ -179,60 +184,68 @@ namespace NetVox.Core.Services
                 int byteLen = dataBits / 8;
                 if (o + byteLen > data.Length) continue;
 
-                _playback.EnsureFormat(sampleRate);
-
-                if (enc == 0x0004)
+                try
                 {
-                    // 16-bit PCM (big-endian) → swap to little-endian and play
-                    if (byteLen >= 2)
-                    {
-                        var pcm16 = new byte[byteLen];
-                        Buffer.BlockCopy(data, o, pcm16, 0, byteLen);
+                    _playback.EnsureFormat(sampleRate);
 
-                        // Big-endian to little-endian
-                        for (int i = 0; i < byteLen - 1; i += 2)
+                    if (enc == 0x0004)
+                    {
+                        // 16-bit PCM (big-endian) → swap to little-endian and play
+                        if (byteLen >= 2)
                         {
-                            byte hi = pcm16[i];
-                            pcm16[i] = pcm16[i + 1];
-                            pcm16[i + 1] = hi;
+                            var pcm16 = new byte[byteLen];
+                            Buffer.BlockCopy(data, o, pcm16, 0, byteLen);
+
+                            // Big-endian to little-endian
+                            for (int i = 0; i < byteLen - 1; i += 2)
+                            {
+                                byte hi = pcm16[i];
+                                pcm16[i] = pcm16[i + 1];
+                                pcm16[i + 1] = hi;
+                            }
+
+                            _playback.EnqueuePcm16(pcm16, 0, pcm16.Length);
+                            PacketReceived?.Invoke(sampleRate);
+                        }
+                    }
+                    else if (enc == 0x0005)
+                    {
+                        // 8-bit linear PCM → expand to 16-bit little-endian
+                        var pcm8 = new byte[byteLen];
+                        Buffer.BlockCopy(data, o, pcm8, 0, byteLen);
+
+                        var pcm16 = new byte[pcm8.Length * 2];
+                        int w = 0;
+                        for (int i = 0; i < pcm8.Length; i++)
+                        {
+                            int s = (sbyte)pcm8[i]; // sign-extend (intentional; zero-centered)
+                            s <<= 8;                // to 16-bit
+                            pcm16[w++] = (byte)(s & 0xFF);
+                            pcm16[w++] = (byte)((s >> 8) & 0xFF);
                         }
 
                         _playback.EnqueuePcm16(pcm16, 0, pcm16.Length);
                         PacketReceived?.Invoke(sampleRate);
                     }
-                }
-                else if (enc == 0x0005)
-                {
-                    // 8-bit linear PCM (current behavior) → expand to 16-bit little-endian
-                    var pcm8 = new byte[byteLen];
-                    Buffer.BlockCopy(data, o, pcm8, 0, byteLen);
-
-                    var pcm16 = new byte[pcm8.Length * 2];
-                    int w = 0;
-                    for (int i = 0; i < pcm8.Length; i++)
+                    else if (enc == 0x0001)
                     {
-                        int s = (sbyte)pcm8[i]; // sign-extend (intentional per your current path)
-                        s <<= 8;                // to 16-bit
-                        pcm16[w++] = (byte)(s & 0xFF);
-                        pcm16[w++] = (byte)((s >> 8) & 0xFF);
+                        // μ-law → decode to 16-bit PCM little-endian and play
+                        var mulaw = new byte[byteLen];
+                        Buffer.BlockCopy(data, o, mulaw, 0, byteLen);
+
+                        var pcm16 = G711MuLaw.DecodeToPcm16Le(mulaw, 0, mulaw.Length);
+                        _playback.EnqueuePcm16(pcm16, 0, pcm16.Length);
+                        PacketReceived?.Invoke(sampleRate);
                     }
-
-                    _playback.EnqueuePcm16(pcm16, 0, pcm16.Length);
-                    PacketReceived?.Invoke(sampleRate);
+                    else
+                    {
+                        // Unknown/unsupported encoding; ignore quietly
+                    }
                 }
-                else if (enc == 0x0001)
+                catch (Exception ex)
                 {
-                    // μ-law → decode to 16-bit PCM little-endian and play
-                    var mulaw = new byte[byteLen];
-                    Buffer.BlockCopy(data, o, mulaw, 0, byteLen);
-
-                    var pcm16 = G711MuLaw.DecodeToPcm16Le(mulaw, 0, mulaw.Length);
-                    _playback.EnqueuePcm16(pcm16, 0, pcm16.Length);
-                    PacketReceived?.Invoke(sampleRate);
-                }
-                else
-                {
-                    // Unknown/unsupported encoding; ignore quietly
+                    // Playback path failed (device lost, etc.) — surface but keep listening.
+                    ErrorOccurred?.Invoke($"Audio playback error: {ex.Message}");
                 }
             }
         }
@@ -249,21 +262,13 @@ namespace NetVox.Core.Services
         private static int ReadBE32(byte[] buf, int offset) =>
             (buf[offset] << 24) | (buf[offset + 1] << 16) | (buf[offset + 2] << 8) | buf[offset + 3];
 
-        private static bool IsIgnorableReceiveError(SocketError code)
-        {
-            switch (code)
-            {
-                case SocketError.Interrupted:          // operation interrupted
-                case SocketError.OperationAborted:     // canceled during shutdown
-                case SocketError.NetworkDown:
-                case SocketError.NetworkUnreachable:
-                case SocketError.HostUnreachable:
-                case SocketError.ConnectionReset:      // ICMP Port Unreachable on Windows
-                    return true;
-                default:
-                    return false;
-            }
-        }
+        private static bool IsIgnorableReceiveError(SocketError code) =>
+            code == SocketError.Interrupted ||
+            code == SocketError.OperationAborted ||
+            code == SocketError.NetworkDown ||
+            code == SocketError.NetworkUnreachable ||
+            code == SocketError.HostUnreachable ||
+            code == SocketError.ConnectionReset;
 
         public void Dispose() => Stop();
     }

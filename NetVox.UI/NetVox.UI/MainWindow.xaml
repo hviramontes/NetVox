@@ -87,7 +87,12 @@
 
         <!-- Toast overlay: spans entire layout; control aligns itself top-right -->
         <controls:ToastHost x:Name="MainToast"
-                            Grid.RowSpan="2"
-                            Grid.ColumnSpan="2"/>
+                    Grid.RowSpan="2"
+                    Grid.ColumnSpan="2"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="0,8,8,0"
+                    IsHitTestVisible="False"/>
+
     </Grid>
 </Window>

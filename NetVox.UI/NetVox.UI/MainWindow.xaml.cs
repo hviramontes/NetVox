@@ -15,6 +15,8 @@ using System.Windows.Threading; // NEW
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Diagnostics;
+
 
 namespace NetVox.UI
 {
@@ -53,6 +55,8 @@ namespace NetVox.UI
         private AudioSettingsView _audioView; // NEW
         private CompatibilityImportView _compatView; // NEW
         private RadioInterfaceWindow _radioUi; // NEW
+        private LoggingView _loggingView; // NEW
+
 
         // Live keybind reload
         private FileSystemWatcher _keybindsWatcher;
@@ -60,6 +64,7 @@ namespace NetVox.UI
         private string _keybindsPath;
 
         private AudioCaptureService _capture; // NEW: keep reference so we can set mic device
+        private LoggingService _logger; // NEW: file logger
 
         public MainWindow()
         {
@@ -150,8 +155,27 @@ namespace NetVox.UI
                 }
             }
 
+            // NEW: initialize file logger using profile preferences
+            try
+            {
+                var logsFolder = Path.Combine(_basePath, "logs");
+                Directory.CreateDirectory(logsFolder);
+                _logger = new LoggingService(
+                    logsFolder,
+                    enabled: true, // logging on by default
+                    verbose: _profile?.VerboseLogging ?? false,
+                    retentionDays: _profile?.LogRetentionDays > 0 ? _profile.LogRetentionDays : 10
+                );
+                _logger.Info("NetVox starting up.");
+            }
+            catch
+            {
+                // logging must never crash the app
+            }
+
             // Initialize services
             _networkService = new NetworkService();
+
             // Apply persisted network settings from profile to live service
             _networkService.CurrentConfig = _profile.Network ?? new NetworkConfig();
 
@@ -159,18 +183,40 @@ namespace NetVox.UI
             // Apply persisted DIS settings from profile to live PDU service
             _pduService.Settings = _profile.Dis ?? new PduSettings();
 
+            _pduService.LogEvent += msg => { try { _logger?.Verbose(msg); } catch { } };
             _pduService.ErrorOccurred += msg =>
             {
-                NotificationService.Show(msg, Controls.ToastKind.Error);
+                try { _logger?.Error(msg); } catch { }
+                NetVox.UI.Services.NotificationService.Show(msg, Controls.ToastKind.Error);
             };
 
             // Keep a field so we can set the input device by FriendlyName
             _capture = new AudioCaptureService();
+            // Mic device errors → toast
+            _capture.ErrorOccurred += msg =>
+            {
+                NetVox.UI.Services.NotificationService.Show(msg, Controls.ToastKind.Error);
+            };
+
             _radio = new RadioService(_capture, _pduService);
 
             // Create playback + RX listener (playback can target an output device by FriendlyName)
             _playback = new AudioPlaybackService();
+            // Speaker device errors → toast
+            (_playback as AudioPlaybackService)!.ErrorOccurred += msg =>
+            {
+                NetVox.UI.Services.NotificationService.Show(msg, Controls.ToastKind.Error);
+            };
+
             _rx = new SignalRxService(_networkService, _playback);
+
+            // UDP bind/join/receive errors (RX) → toast + file log
+            _rx.ErrorOccurred += msg =>
+            {
+                try { _logger?.Error(msg); } catch { }
+                NotificationService.Show(msg, Controls.ToastKind.Error);
+            };
+
 
             // NEW: blink RX banner when a Signal PDU arrives
             _rx.PacketReceived += sr =>
@@ -185,26 +231,29 @@ namespace NetVox.UI
 
             };
 
-            _rx.ErrorOccurred += msg =>
-            {
-                NotificationService.Show(msg, Controls.ToastKind.Error);
-            };
-
-
             _pduService.LogEvent += msg => Dispatcher.BeginInvoke(new Action(() =>
-                System.Diagnostics.Debug.WriteLine($"[LOG] {msg}")));
+            {
+                try { _logger?.Verbose(msg); } catch { }
+                System.Diagnostics.Debug.WriteLine($"[LOG] {msg}");
+            }));
 
             _radio.TransmitStarted += (_, _) => Dispatcher.BeginInvoke(new Action(() =>
-                System.Diagnostics.Debug.WriteLine("[PTT] Transmit Started")));
+            {
+                try { _logger?.Info("PTT Transmit Started"); } catch { }
+                System.Diagnostics.Debug.WriteLine("[PTT] Transmit Started");
+            }));
 
             _radio.TransmitStopped += async (_, _) =>
             {
                 // Flush any leftover audio so PDU staging buffer doesn’t keep 200–700 bytes hanging around
-                await _pduService.SendSignalPduAsync(Array.Empty<byte>());
+                _pduService.FlushSignalHold();
                 Dispatcher.BeginInvoke(new Action(() =>
-                    System.Diagnostics.Debug.WriteLine("[PTT] Transmit Stopped")));
-
+                {
+                    try { _logger?.Info("PTT Transmit Stopped"); } catch { }
+                    System.Diagnostics.Debug.WriteLine("[PTT] Transmit Stopped");
+                }));
             };
+
 
             // Nav buttons
             BtnChannelManagement.Click += (_, _) =>
@@ -292,6 +341,97 @@ namespace NetVox.UI
                 MainContent.Content = _audioView;
             };
 
+            // 📋 Logging — NEW
+            BtnLogging.Click += (_, _) =>
+            {
+                if (_loggingView == null)
+                {
+                    _loggingView = new LoggingView();
+                    _loggingView.SetState(_profile?.VerboseLogging ?? false, _profile?.LogRetentionDays > 0 ? _profile.LogRetentionDays : 10);
+                    _loggingView.SetHint($"Logs folder: {System.IO.Path.Combine(_basePath, "logs")}");
+
+                    _loggingView.ApplyRequested += (verbose, days) =>
+                    {
+                        try
+                        {
+                            _profile.VerboseLogging = verbose;
+                            _profile.LogRetentionDays = days;
+                            _logger?.Configure(enabled: true, verbose: verbose, retentionDays: days);
+                            _repo.SaveProfile(_profile, "default.json");
+                            TxtStatus.Text = $"Logging: verbose={(verbose ? "on" : "off")}, retention={days}d";
+                            NotificationService.Show("Logging settings saved.", Controls.ToastKind.Info);
+
+                        }
+                        catch (Exception ex)
+                        {
+                            NotificationService.Show("Failed to save logging settings: " + ex.Message, Controls.ToastKind.Error);
+                        }
+                    };
+
+                    _loggingView.OpenFolderRequested += () =>
+                    {
+                        try
+                        {
+                            var folder = System.IO.Path.Combine(_basePath, "logs");
+                            System.IO.Directory.CreateDirectory(folder);
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = folder,
+                                UseShellExecute = true
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            NotificationService.Show("Could not open logs folder: " + ex.Message, Controls.ToastKind.Error);
+                        }
+                    };
+
+                    _loggingView.OpenCurrentLogRequested += () =>
+                    {
+                        try
+                        {
+                            var folder = System.IO.Path.Combine(_basePath, "logs");
+                            System.IO.Directory.CreateDirectory(folder);
+                            var today = DateTime.UtcNow.ToString("yyyy-MM-dd");
+                            var file = System.IO.Path.Combine(folder, $"NetVox-{today}.log");
+                            // Create an empty file if it doesn't exist so the shell opens something sane
+                            if (!System.IO.File.Exists(file))
+                            {
+                                System.IO.File.WriteAllText(file, "");
+                            }
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = file,
+                                UseShellExecute = true
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            NotificationService.Show("Could not open today’s log: " + ex.Message, Controls.ToastKind.Error);
+                        }
+                    };
+
+                    _loggingView.WriteTestRequested += () =>
+                    {
+                        try
+                        {
+                            _logger?.Info("Test log line by user request.");
+                            NotificationService.Show("Wrote a test line to the log.", Controls.ToastKind.Info);
+                        }
+                        catch (Exception ex)
+                        {
+                            NotificationService.Show("Failed to write test line: " + ex.Message, Controls.ToastKind.Error);
+                        }
+                    };
+                }
+
+                // Refresh view state from current profile each time you open it
+                _loggingView.SetState(_profile?.VerboseLogging ?? false, _profile?.LogRetentionDays > 0 ? _profile.LogRetentionDays : 10);
+                _loggingView.SetHint($"Logs folder: {System.IO.Path.Combine(_basePath, "logs")}");
+                MainContent.Content = _loggingView;
+
+            };
+
             // Start/Stop radio gating
             BtnStartRadio.Click += (_, _) => StartRadio();
             BtnStopRadio.Click += (_, _) => StopRadio();
@@ -334,6 +474,8 @@ namespace NetVox.UI
 
         public void StartRadio()
         {
+            try { _logger?.Info("Radio starting..."); } catch { }
+
             _radioArmed = true;
             BtnStartRadio.IsEnabled = false;
             BtnStopRadio.IsEnabled = true;
@@ -469,6 +611,8 @@ namespace NetVox.UI
 
         private void StopRadio()
         {
+            try { _logger?.Info("Radio stopping..."); } catch { }
+
             // Stop RX first to close socket
             try { _rx.Stop(); } catch { /* ignore */ }
 
@@ -984,9 +1128,14 @@ namespace NetVox.UI
 
 
             // Stop blink timer
+            // Stop blink timer
             try { _rxBlink?.Stop(); } catch { }
 
+            try { _logger?.Info("NetVox shutting down."); } catch { }
+            try { _logger?.Dispose(); } catch { }
+
             base.OnClosed(e);
+
         }
     }
 }
