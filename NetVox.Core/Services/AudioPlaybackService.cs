@@ -17,6 +17,9 @@ namespace NetVox.Core.Services
         private BufferedWaveProvider? _buffer;           // PCM16 LE mono buffer
         private int _sampleRate;
         private string? _pendingDeviceFriendlyName;      // stored until init
+        private readonly object _reinitGate = new();
+        private int _pendingReinitSampleRate = 0;
+        private bool _reinitWorkerRunning = false;
 
         /// <summary>Raised when the output device cannot initialize or playback fails.</summary>
         public event Action<string>? ErrorOccurred;
@@ -42,9 +45,59 @@ namespace NetVox.Core.Services
         public void EnsureFormat(int sampleRate)
         {
             if (sampleRate <= 0) sampleRate = 8000;
+
+            // No change needed
             if (_out != null && _sampleRate == sampleRate) return;
-            Reinit(sampleRate);
+
+            // If we have no active output yet, just init now.
+            if (_out == null || _buffer == null)
+            {
+                Reinit(sampleRate);
+                return;
+            }
+
+            // Defer re-init until buffered audio drains to a tiny threshold,
+            // or force after a short timeout to avoid stalling forever.
+            lock (_reinitGate)
+            {
+                _pendingReinitSampleRate = sampleRate;
+
+                if (_reinitWorkerRunning) return;
+                _reinitWorkerRunning = true;
+            }
+
+            System.Threading.Tasks.Task.Run(async () =>
+            {
+                const int targetMs = 10;   // drain to ~10 ms for minimal click
+                const int maxWaitMs = 300; // force switch after 300 ms if stream never drains
+                int waited = 0;
+
+                try
+                {
+                    while (true)
+                    {
+                        int bufferedMs = GetBufferedMilliseconds();
+                        if (bufferedMs <= targetMs) break;
+
+                        await System.Threading.Tasks.Task.Delay(20).ConfigureAwait(false);
+                        waited += 20;
+                        if (waited >= maxWaitMs) break;
+                    }
+                }
+                catch { /* ignore */ }
+
+                int sr;
+                lock (_reinitGate)
+                {
+                    sr = _pendingReinitSampleRate;
+                    _pendingReinitSampleRate = 0;
+                    _reinitWorkerRunning = false;
+                }
+
+                try { Reinit(sr); } catch { /* never throw from audio thread */ }
+            });
         }
+
 
         private void Reinit(int sampleRate)
         {
@@ -147,6 +200,18 @@ namespace NetVox.Core.Services
             }
 
             _buffer.AddSamples(buffer, offset, count);
+        }
+
+        private int GetBufferedMilliseconds()
+        {
+            try
+            {
+                if (_buffer == null) return 0;
+                int avgBps = _buffer.WaveFormat?.AverageBytesPerSecond ?? 0;
+                if (avgBps <= 0) return 0;
+                return (int)(_buffer.BufferedBytes * 1000L / avgBps);
+            }
+            catch { return 0; }
         }
 
         public void Start() => _out?.Play();

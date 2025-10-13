@@ -28,6 +28,9 @@ namespace NetVox.Core.Services
         private Task? _loopTask;
         private readonly object _gate = new();
 
+        // NEW: avoid redundant EnsureFormat calls and reduce device churn
+        private int _lastPlaybackSampleRate = 0;
+
         /// <summary>Fires once per Signal PDU (argument = sampleRate). Used by UI to blink RX.</summary>
         public event Action<int>? PacketReceived;
 
@@ -60,6 +63,9 @@ namespace NetVox.Core.Services
                 _udp = null;
                 _cts = null;
                 _loopTask = null;
+
+                // NEW: reset remembered rate so next Start() cleanly reconfigures
+                _lastPlaybackSampleRate = 0;
             }
         }
 
@@ -186,7 +192,12 @@ namespace NetVox.Core.Services
 
                 try
                 {
-                    _playback.EnsureFormat(sampleRate);
+                    // NEW: only re-init playback when the rate actually changes
+                    if (sampleRate > 0 && sampleRate != _lastPlaybackSampleRate)
+                    {
+                        _playback.EnsureFormat(sampleRate);
+                        _lastPlaybackSampleRate = sampleRate;
+                    }
 
                     if (enc == 0x0004)
                     {

@@ -32,6 +32,15 @@ namespace NetVox.UI
             BtnTransmit.PreviewMouseLeftButtonDown += (_, __) =>
             {
                 if (!_armed) return;
+
+                // Block PTT when muted and show a clear toast. Keep the MUTED state visible.
+                if (BtnMute.IsChecked == true || _state == RadioState.Muted)
+                {
+                    NotificationService.Show("PTT blocked: Muted", Controls.ToastKind.Info);
+                    SetMuted(true); // ensure status panel says MUTED
+                    return;
+                }
+
                 SetTransmitting(true);
                 PttPressed?.Invoke();
             };
